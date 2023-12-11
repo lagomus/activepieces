@@ -1,0 +1,44 @@
+{
+  "name": "pieces-streto",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/pieces/streto/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "dist/packages/pieces/streto",
+        "tsConfig": "packages/pieces/streto/tsconfig.lib.json",
+        "packageJson": "packages/pieces/streto/package.json",
+        "main": "packages/pieces/streto/src/index.ts",
+        "assets": [
+          "packages/pieces/streto/*.md"
+        ],
+        "buildableProjectDepsInPackageJsonType": "dependencies",
+        "updateBuildableProjectDepsInPackageJson": true
+      }
+    },
+    "publish": {
+      "command": "node tools/scripts/publish.mjs pieces-streto {args.ver} {args.tag}",
+      "dependsOn": [
+        "build"
+      ]
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": [
+        "{options.outputFile}"
+      ],
+      "options": {
+        "lintFilePatterns": [
+          "packages/pieces/streto/**/*.ts",
+          "packages/pieces/streto/package.json"
+        ]
+      }
+    }
+  },
+  "tags": []
+}
