@@ -113,7 +113,10 @@
           "browserTarget": "ui-core:build:production"
         },
         "development": {
-          "browserTarget": "ui-core:build:development"
+          "browserTarget": "ui-core:build:development",
+          "ssl": true,
+          "sslKey": "ssl/activepieces-tls.key",
+          "sslCert": "ssl/activepieces-tls.crt"
         },
         "fr": {
           "browserTarget": "ui-core:build:development,fr"
