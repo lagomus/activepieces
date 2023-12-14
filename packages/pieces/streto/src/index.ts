@@ -4,7 +4,7 @@ import {
   Property,
 } from '@activepieces/pieces-framework';
 import { fetch_products } from './lib/actions/fetch-products';
-import { fetch_catalog } from './lib/actions/fetch-catalog';
+import { fetch_catalog_id } from './lib/actions/fetch-catalog';
 
 const authMarkdown = `
 To generate an API key, follow the steps below in Streto Admin:
@@ -37,6 +37,6 @@ export const streto = createPiece({
   minimumSupportedRelease: '0.1.0',
   logoUrl: 'https://streto.io/img/logo-ligth.png',
   authors: [],
-  actions: [fetch_products, fetch_catalog],
+  actions: [fetch_products, fetch_catalog_id],
   triggers: [],
 });
