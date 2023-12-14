@@ -1,0 +1,136 @@
+{
+  "id": "tussG2e9pvO7DAxfR2EjW",
+  "created": "1702579085235",
+  "updated": "1702579085235",
+  "name": "New order",
+  "description": "",
+  "tags": [],
+  "pieces": [
+    "@activepieces/piece-mercadolibre",
+    "@activepieces/piece-streto"
+  ],
+  "blogUrl": "",
+  "template": {
+    "displayName": "New order",
+    "trigger": {
+      "name": "trigger",
+      "valid": true,
+      "displayName": "Webhook Trigger",
+      "nextAction": {
+        "displayName": "Code",
+        "name": "step_2",
+        "valid": true,
+        "type": "CODE",
+        "settings": {
+          "sourceCode": {
+            "packageJson": "\n      {\n        \"dependencies\": {\n        }\n      }",
+            "code": "export const code = async (inputs) => {\n    return { orderId: inputs.orderId.split('/')[2] };\n};"
+          },
+          "input": {
+            "orderId": "{{trigger['body']['resource']}}"
+          },
+          "inputUiInfo": {}
+        },
+        "nextAction": {
+          "displayName": "Fetch Order",
+          "name": "step_1",
+          "valid": true,
+          "type": "PIECE",
+          "settings": {
+            "packageType": "REGISTRY",
+            "pieceType": "OFFICIAL",
+            "pieceName": "@activepieces/piece-mercadolibre",
+            "pieceVersion": "0.0.1",
+            "input": {
+              "auth": "{{connections['mercadolibre']}}",
+              "orderId": "{{step_2['orderId']}}"
+            },
+            "inputUiInfo": {},
+            "actionName": "fetch_order"
+          },
+          "nextAction": {
+            "displayName": "Fetch Order Shipment",
+            "name": "step_3",
+            "valid": true,
+            "type": "PIECE",
+            "settings": {
+              "packageType": "REGISTRY",
+              "pieceType": "OFFICIAL",
+              "pieceName": "@activepieces/piece-mercadolibre",
+              "pieceVersion": "0.0.1",
+              "input": {
+                "auth": "{{connections['mercadolibre']}}",
+                "orderId": "{{step_2['orderId']}}"
+              },
+              "inputUiInfo": {},
+              "actionName": "fetch_order_shipment"
+            },
+            "nextAction": {
+              "displayName": "Fetch Catalog Id",
+              "name": "step_4",
+              "valid": true,
+              "type": "PIECE",
+              "settings": {
+                "packageType": "REGISTRY",
+                "pieceType": "OFFICIAL",
+                "pieceName": "@activepieces/piece-streto",
+                "pieceVersion": "0.0.1",
+                "input": {
+                  "auth": "{{connections['streto']}}",
+                  "catalog_name": "mercado_libre"
+                },
+                "inputUiInfo": {},
+                "actionName": "fetch_catalog_id"
+              },
+              "nextAction": {
+                "displayName": "Code",
+                "name": "step_6",
+                "valid": true,
+                "type": "CODE",
+                "settings": {
+                  "sourceCode": {
+                    "packageJson": "\n      {\n        \"dependencies\": {\n        }\n      }",
+                    "code": "export const code = async (inputs) => {\n  return JSON.stringify(inputs.attributes);\n};"
+                  },
+                  "input": {
+                    "attributes": "attributes.sku"
+                  },
+                  "inputUiInfo": {}
+                },
+                "nextAction": {
+                  "displayName": "Fetch Products",
+                  "name": "step_5",
+                  "valid": true,
+                  "type": "PIECE",
+                  "settings": {
+                    "packageType": "REGISTRY",
+                    "pieceType": "OFFICIAL",
+                    "pieceName": "@activepieces/piece-streto",
+                    "pieceVersion": "0.0.1",
+                    "input": {
+                      "auth": "{{connections['streto']}}",
+                      "catalog_id": "{{step_4['catalogId']}}",
+                      "filter_attribute": "{{step_6}}",
+                      "filter_array": "{{step_1['skus']}}"
+                    },
+                    "inputUiInfo": {},
+                    "actionName": "fetch_products"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "type": "WEBHOOK",
+      "settings": {
+        "inputUiInfo": {}
+      }
+    },
+    "valid": true
+  },
+  "userId": null,
+  "imageUrl": null,
+  "featuredDescription": "",
+  "isFeatured": false
+}
