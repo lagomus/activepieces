@@ -2,11 +2,11 @@ import { createAction, Property } from '@activepieces/pieces-framework';
 import { httpClient, HttpMethod } from '@activepieces/pieces-common';
 import { stretoAuth } from '../..';
 
-export const fetch_catalog = createAction({
-  name: 'fetch_catalog', // Must be a unique across the piece, this shouldn't be changed.
+export const fetch_catalog_id = createAction({
+  name: 'fetch_catalog_id', // Must be a unique across the piece, this shouldn't be changed.
   auth: stretoAuth,
-  displayName: 'Fetch Catalog',
-  description: 'Fetch catalog from Streto',
+  displayName: 'Fetch Catalog Id',
+  description: 'Fetch catalog id from Streto',
   props: {
     catalog_name: Property.ShortText({
       displayName: 'Catalog Name',
@@ -22,12 +22,12 @@ export const fetch_catalog = createAction({
       headers: {
         'x-api-key': context.auth.apiKey,
       },
-      url: `${context.auth.baseUrl}/catalogs?filter={"where":{"name":"${catalogName}"}}`,
+      url: `${context.auth.baseUrl}/app/catalogs?filter={"where":{"name":"${catalogName}"}}`,
     });
-    const catalogId: string = response.body.id;
+    const catalogId: string = response.body[0]?.id;
 
     return {
-      catalogId,
+      catalogId
     };
   },
 });
