@@ -5,8 +5,8 @@ import { stretoAuth } from '../..';
 export const fetch_products = createAction({
   name: 'fetch_products', // Must be a unique across the piece, this shouldn't be changed.
   auth: stretoAuth,
-  displayName: 'Fetch Products',
-  description: 'Fetch products from Streto',
+  displayName: 'Fetch Products by Catalog Id',
+  description: 'Fetch products by Catalog Id from Streto',
   props: {
     catalog_id: Property.ShortText({
       displayName: 'Catalog ID',
@@ -15,13 +15,13 @@ export const fetch_products = createAction({
     }),
     filter_attribute: Property.ShortText({
       displayName: 'Attribute filter',
-      description: "Use to pass attribute to filter by",
-      required: false
+      description: 'Use to pass attribute to filter by',
+      required: false,
     }),
     filter_array: Property.LongText({
       displayName: 'Array filter',
-      description: "Use to pass an array of elements to filter by",
-      required: false
+      description: 'Use to pass an array of elements to filter by',
+      required: false,
     }),
   },
   async run(context) {
@@ -37,7 +37,7 @@ export const fetch_products = createAction({
       headers: {
         'x-api-key': context.auth.apiKey,
       },
-      url
+      url,
     });
     const products: Product[] = response.body;
 
