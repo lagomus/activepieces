@@ -1,0 +1,114 @@
+{
+  "id": "TAwCchWJewl9j2ewMt34s",
+  "created": "1702673052186",
+  "updated": "1702673052186",
+  "name": "generate-pricelist",
+  "description": "",
+  "tags": [],
+  "pieces": [
+    "@activepieces/piece-google-sheets",
+    "@activepieces/piece-streto",
+    "@activepieces/piece-csv",
+    "@activepieces/piece-google-drive"
+  ],
+  "blogUrl": "",
+  "template": {
+    "displayName": "generate-pricelist",
+    "trigger": {
+      "name": "trigger",
+      "valid": true,
+      "displayName": "Webhook Trigger",
+      "nextAction": {
+        "displayName": "Get next row(s)",
+        "name": "step_1",
+        "valid": true,
+        "nextAction": {
+          "displayName": "Generate price list from Google Sheets",
+          "name": "step_2",
+          "valid": true,
+          "nextAction": {
+            "displayName": "Convert JSON to CSV",
+            "name": "step_3",
+            "valid": true,
+            "nextAction": {
+              "displayName": "Create new file",
+              "name": "step_4",
+              "valid": true,
+              "type": "PIECE",
+              "settings": {
+                "packageType": "REGISTRY",
+                "pieceType": "OFFICIAL",
+                "pieceName": "@activepieces/piece-google-drive",
+                "pieceVersion": "~0.5.4",
+                "input": {
+                  "auth": "{{connections['google-drive']}}",
+                  "fileName": "price_lists.csv",
+                  "text": "{{step_3}}",
+                  "fileType": "plain/text",
+                  "include_team_drives": false
+                },
+                "inputUiInfo": {},
+                "actionName": "create_new_gdrive_file"
+              }
+            },
+            "type": "PIECE",
+            "settings": {
+              "packageType": "REGISTRY",
+              "pieceType": "OFFICIAL",
+              "pieceName": "@activepieces/piece-csv",
+              "pieceVersion": "~0.3.0",
+              "input": {
+                "csv_object": "{{step_2['priceLists']}}",
+                "has_headers": true,
+                "delimiter_type": ","
+              },
+              "inputUiInfo": {},
+              "actionName": "convert_json_to_csv"
+            }
+          },
+          "type": "PIECE",
+          "settings": {
+            "packageType": "REGISTRY",
+            "pieceType": "OFFICIAL",
+            "pieceName": "@activepieces/piece-streto",
+            "pieceVersion": "~0.0.1",
+            "input": {
+              "auth": "{{connections['streto']}}",
+              "catalog_name": "default",
+              "list_name": "default",
+              "rules": "{{step_1}}"
+            },
+            "inputUiInfo": {},
+            "actionName": "generate_pricelist"
+          }
+        },
+        "type": "PIECE",
+        "settings": {
+          "packageType": "REGISTRY",
+          "pieceType": "OFFICIAL",
+          "pieceName": "@activepieces/piece-google-sheets",
+          "pieceVersion": "~0.7.4",
+          "input": {
+            "auth": "{{connections['google-sheets']}}",
+            "spreadsheet_id": "14ZQ7AtX5FPMGZpqVzhzRXpEBupk7vWdTjjR6jBUGVBg",
+            "sheet_id": 1363601301,
+            "memKey": "row_number",
+            "groupSize": "100",
+            "include_team_drives": false
+          },
+          "inputUiInfo": {},
+          "actionName": "get_next_rows"
+        }
+      },
+      "type": "WEBHOOK",
+      "settings": {
+        "inputUiInfo": {}
+      }
+    },
+    "valid": true
+  },
+  "userId": null,
+  "imageUrl": null,
+  "featuredDescription": "",
+  "isFeatured": false
+}
