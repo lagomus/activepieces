@@ -43,6 +43,7 @@ export const fetch_products = createAction({
 
     return {
       products,
+      images: products.some(p => p.attributes?.images && p.attributes?.images.length > 0)
     };
   },
 });
