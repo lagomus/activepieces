@@ -8,6 +8,9 @@ import { fetch_catalog_id } from './lib/actions/fetch-catalog-id';
 import { generate_pricelist } from './lib/actions/generate-pricelist';
 import { fetch_settings } from './lib/actions/fetch-settings';
 import { import_order } from './lib/actions/import-order';
+import { count_products } from './lib/actions/count-products';
+import { build_pages } from './lib/actions/build-pages';
+import { save_attributes } from './lib/actions/save-attributes';
 
 const authMarkdown = `
 To generate an API key, follow the steps below in Streto Admin:
@@ -40,6 +43,15 @@ export const streto = createPiece({
   minimumSupportedRelease: '0.1.0',
   logoUrl: 'https://streto.io/img/logo-ligth.png',
   authors: [],
-  actions: [fetch_products, fetch_catalog_id, generate_pricelist, fetch_settings, import_order],
+  actions: [
+    fetch_products,
+    fetch_catalog_id,
+    generate_pricelist,
+    fetch_settings,
+    import_order,
+    build_pages,
+    count_products,
+    save_attributes,
+  ],
   triggers: [],
 });
