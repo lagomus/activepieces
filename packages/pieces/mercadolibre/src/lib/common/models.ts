@@ -91,3 +91,67 @@ export interface Details {}
 export interface Totals {}
 
 export interface AdditionalInformation {}
+
+export type Product = {
+  id: string;
+  type?: string;
+  qty?: number;
+  price?: number;
+  attributes: Attributes;
+  scopedAttributes?: ScopedAttributes;
+  attributeSets?: string[];
+  attributeSetName?: string;
+};
+
+type Attributes = {
+  name?: string;
+  sku: string;
+  brand?: string;
+  urlKey?: string;
+  mvb_cost: string;
+  mvb_source_rule: string;
+  enabled?: boolean;
+  images?: Image[];
+  item_condition?: string;
+  model?: string;
+  description?: string;
+  [propName: string]: any;
+};
+
+type ScopedAttributes = {};
+
+type Image = {
+  id: string;
+  roles: string[];
+};
+
+export type Category = {
+  id: string;
+  name: string;
+  children_categories?: Category[];
+  path_from_root?: {
+    id?: string;
+    name?: string;
+  }[];
+};
+
+export type Attribute = {
+  id: string;
+  name?: string;
+  value_type?: string;
+  values?: {
+    id: string;
+    name: string;
+  }[];
+  hint?: string;
+  allowed_units?: {
+    id: string;
+    name: string;
+  }[];
+  default_unit?: string;
+};
+
+export type AttributeSet = {
+  name: string;
+  attributes: string;
+};

@@ -499,3 +499,24 @@ type OrderTotals = {
   discount: number;
   grandTotal: number;
 };
+
+type StockItem = {
+  productId?: string;
+  type?: string;
+  status?: string;
+  qty?: number;
+};
+
+type Price = {
+  productId?: string;
+  priceListId?: string;
+  currencyCode?: string;
+  qty?: number;
+  value?: number;
+};
+
+type PriceList = {
+  id?: string;
+  name?: string;
+  enabled?: boolean;
+};
