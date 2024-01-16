@@ -7,7 +7,7 @@
   "tags": [],
   "pieces": [
     "@activepieces/piece-google-sheets",
-    "@activepieces/piece-streto",
+    "@lagomus/piece-streto",
     "@activepieces/piece-csv",
     "@activepieces/piece-google-drive"
   ],
@@ -47,7 +47,7 @@
           "settings": {
             "packageType": "REGISTRY",
             "pieceType": "OFFICIAL",
-            "pieceName": "@activepieces/piece-streto",
+            "pieceName": "@lagomus/piece-streto",
             "pieceVersion": "~0.0.1",
             "input": {
               "auth": "{{connections['streto']}}",

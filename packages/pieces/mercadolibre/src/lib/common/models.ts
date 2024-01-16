@@ -155,3 +155,48 @@ export type AttributeSet = {
   name: string;
   attributes: string;
 };
+export interface Reviews {
+  paging: Paging;
+  reviews: Review[];
+  rating_average: number;
+  rating_levels: RatingLevels;
+  helpful_reviews: HelpfulReviews;
+  attributes: any[];
+}
+
+export interface Paging {}
+
+export interface Review {
+  body?: any;
+  id?: number;
+  reviewable_object?: ReviewableObject;
+  date_created?: string;
+  status?: string;
+  title?: string;
+  content?: string;
+  rate?: number;
+  valorization?: number;
+  likes?: number;
+  dislikes?: number;
+  reviewer_id?: number;
+  buying_date?: string;
+  relevance?: number;
+  forbidden_words?: number;
+}
+
+export interface ReviewableObject {}
+
+export interface RatingLevels {
+  one_star: number;
+  two_star: number;
+  three_star: number;
+  four_star: number;
+  five_star: number;
+}
+
+export interface HelpfulReviews {}
+
+export interface ProductStretoML {
+  productId: string;
+  MLId: string;
+}

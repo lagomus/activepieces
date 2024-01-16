@@ -6,8 +6,8 @@
   "description": "",
   "tags": [],
   "pieces": [
-    "@activepieces/piece-mercadolibre",
-    "@activepieces/piece-streto"
+    "@lagomus/piece-mercadolibre",
+    "@lagomus/piece-streto"
   ],
   "blogUrl": "",
   "template": {
@@ -82,8 +82,8 @@
                           "settings": {
                             "packageType": "REGISTRY",
                             "pieceType": "OFFICIAL",
-                            "pieceName": "@activepieces/piece-streto",
-                            "pieceVersion": "~0.0.1",
+                            "pieceName": "@lagomus/piece-streto",
+                            "pieceVersion": "~1.0.2",
                             "input": {
                               "auth": "{{connections['streto']}}",
                               "order": [
@@ -113,8 +113,8 @@
                       "settings": {
                         "packageType": "REGISTRY",
                         "pieceType": "OFFICIAL",
-                        "pieceName": "@activepieces/piece-streto",
-                        "pieceVersion": "~0.0.1",
+                        "pieceName": "@lagomus/piece-streto",
+                        "pieceVersion": "~1.0.3",
                         "input": {
                           "auth": "{{connections['streto']}}",
                           "filter_codes": [
@@ -130,8 +130,8 @@
                   "settings": {
                     "packageType": "REGISTRY",
                     "pieceType": "OFFICIAL",
-                    "pieceName": "@activepieces/piece-streto",
-                    "pieceVersion": "~0.0.1",
+                    "pieceName": "@lagomus/piece-streto",
+                    "pieceVersion": "~1.0.3",
                     "input": {
                       "auth": "{{connections['streto']}}",
                       "catalog_id": "{{step_4['catalogId']}}",
@@ -147,8 +147,8 @@
               "settings": {
                 "packageType": "REGISTRY",
                 "pieceType": "OFFICIAL",
-                "pieceName": "@activepieces/piece-streto",
-                "pieceVersion": "~0.0.1",
+                "pieceName": "@lagomus/piece-streto",
+                "pieceVersion": "~1.0.3",
                 "input": {
                   "auth": "{{connections['streto']}}",
                   "catalog_name": "mercado_libre"
@@ -161,8 +161,8 @@
             "settings": {
               "packageType": "REGISTRY",
               "pieceType": "OFFICIAL",
-              "pieceName": "@activepieces/piece-mercadolibre",
-              "pieceVersion": "~0.0.1",
+              "pieceName": "@lagomus/piece-mercadolibre",
+              "pieceVersion": "~1.0.3",
               "input": {
                 "auth": "{{connections['mercadolibre']}}",
                 "orderId": "{{step_2['orderId']}}"
@@ -175,8 +175,8 @@
           "settings": {
             "packageType": "REGISTRY",
             "pieceType": "OFFICIAL",
-            "pieceName": "@activepieces/piece-mercadolibre",
-            "pieceVersion": "~0.0.1",
+            "pieceName": "@lagomus/piece-mercadolibre",
+            "pieceVersion": "~1.0.3",
             "input": {
               "auth": "{{connections['mercadolibre']}}",
               "orderId": "{{step_2['orderId']}}"

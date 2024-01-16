@@ -12,6 +12,7 @@ export const fetch_catalog_id = createAction({
       displayName: 'Catalog Name',
       description: undefined,
       required: true,
+      defaultValue: "default"
     }),
   },
   async run(context) {
