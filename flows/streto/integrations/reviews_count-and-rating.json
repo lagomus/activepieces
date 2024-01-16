@@ -1,0 +1,149 @@
+{
+  "id": "4XzB4Wm8VsDo0d0rKx4GZ",
+  "created": "1705424074775",
+  "updated": "1705424074775",
+  "name": "Reviews and Rates",
+  "description": "",
+  "tags": [],
+  "pieces": [
+    "@activepieces/piece-streto",
+    "@activepieces/piece-mercadolibre"
+  ],
+  "blogUrl": "",
+  "template": {
+    "displayName": "Reviews and Rates",
+    "trigger": {
+      "name": "trigger",
+      "valid": true,
+      "displayName": "Webhook Trigger",
+      "nextAction": {
+        "displayName": "Fetch Catalog Id by Name",
+        "name": "step_1",
+        "valid": true,
+        "nextAction": {
+          "displayName": "Fetch Products by Catalog Id",
+          "name": "step_2",
+          "valid": true,
+          "nextAction": {
+            "displayName": "Code",
+            "name": "step_3",
+            "valid": true,
+            "nextAction": {
+              "displayName": "Code",
+              "name": "step_7",
+              "valid": true,
+              "nextAction": {
+                "displayName": "Loop on Items",
+                "name": "step_4",
+                "valid": true,
+                "firstLoopAction": {
+                  "displayName": "Fetch Review",
+                  "name": "step_5",
+                  "valid": true,
+                  "nextAction": {
+                    "displayName": "Import reviews data",
+                    "name": "step_6",
+                    "valid": true,
+                    "type": "PIECE",
+                    "settings": {
+                      "packageType": "REGISTRY",
+                      "pieceType": "OFFICIAL",
+                      "pieceName": "@activepieces/piece-streto",
+                      "pieceVersion": "~0.0.1",
+                      "input": {
+                        "auth": "{{connections['marcovecchio']}}",
+                        "productsIds": [
+                          "{{step_3}}"
+                        ],
+                        "average_rating": "{{step_5['review']['rating_average']}}",
+                        "total_reviews": "{{step_5['review']['paging']['total']}}",
+                        "MlProductId": "{{step_4.item}}"
+                      },
+                      "inputUiInfo": {},
+                      "actionName": "import_reviews_data"
+                    }
+                  },
+                  "type": "PIECE",
+                  "settings": {
+                    "packageType": "REGISTRY",
+                    "pieceType": "OFFICIAL",
+                    "pieceName": "@activepieces/piece-mercadolibre",
+                    "pieceVersion": "~0.0.1",
+                    "input": {
+                      "auth": "{{connections['mercadolibre']}}",
+                      "productId": "{{step_4.item}}"
+                    },
+                    "inputUiInfo": {},
+                    "actionName": "fetch_review"
+                  }
+                },
+                "type": "LOOP_ON_ITEMS",
+                "settings": {
+                  "items": "{{step_7}}",
+                  "inputUiInfo": {}
+                }
+              },
+              "type": "CODE",
+              "settings": {
+                "sourceCode": {
+                  "packageJson": "\n      {\n        \"dependencies\": {\n        }\n      }",
+                  "code": "export const code = async (inputs) => {\n  return inputs.MlIds.map(e => e[1]);\n};"
+                },
+                "input": {
+                  "MlIds": "{{step_3}}"
+                },
+                "inputUiInfo": {}
+              }
+            },
+            "type": "CODE",
+            "settings": {
+              "sourceCode": {
+                "packageJson": "\n      {\n        \"dependencies\": {\n        }\n      }",
+                "code": "export const code = async (inputs) => {\n  return inputs.products.map((e: any) => ( [e.id,`MLA${e.attributes.sku}`] ) );\n};"
+              },
+              "input": {
+                "products": "{{step_2['products']}}"
+              },
+              "inputUiInfo": {}
+            }
+          },
+          "type": "PIECE",
+          "settings": {
+            "packageType": "REGISTRY",
+            "pieceType": "OFFICIAL",
+            "pieceName": "@activepieces/piece-streto",
+            "pieceVersion": "~0.0.1",
+            "input": {
+              "auth": "{{connections['marcovecchio']}}",
+              "catalog_id": "{{step_1['catalogId']}}"
+            },
+            "inputUiInfo": {},
+            "actionName": "fetch_products"
+          }
+        },
+        "type": "PIECE",
+        "settings": {
+          "packageType": "REGISTRY",
+          "pieceType": "OFFICIAL",
+          "pieceName": "@activepieces/piece-streto",
+          "pieceVersion": "~0.0.1",
+          "input": {
+            "auth": "{{connections['marcovecchio']}}",
+            "catalog_name": "default"
+          },
+          "inputUiInfo": {},
+          "actionName": "fetch_catalog_id"
+        }
+      },
+      "type": "WEBHOOK",
+      "settings": {
+        "inputUiInfo": {}
+      }
+    },
+    "valid": true
+  },
+  "userId": null,
+  "imageUrl": null,
+  "featuredDescription": "",
+  "isFeatured": false
+}
