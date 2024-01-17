@@ -57,7 +57,7 @@
                       "settings": {
                         "packageType": "REGISTRY",
                         "pieceType": "OFFICIAL",
-                        "pieceName": "@1.0.3/piece-mercadolibre",
+                        "pieceName": "@lagomus/piece-mercadolibre",
                         "pieceVersion": "~1.0.2",
                         "input": {
                           "auth": "{{connections['mercadolibre']}}",
@@ -74,7 +74,7 @@
                     "packageType": "REGISTRY",
                     "pieceType": "OFFICIAL",
                     "pieceName": "@lagomus/piece-streto",
-                    "pieceVersion": "~0.0.1",
+                    "pieceVersion": "~1.0.2",
                     "input": {
                       "auth": "{{connections['streto']}}",
                       "catalog_id": "{{step_1['catalogId']}}",
@@ -100,7 +100,7 @@
                 "packageType": "REGISTRY",
                 "pieceType": "OFFICIAL",
                 "pieceName": "@lagomus/piece-streto",
-                "pieceVersion": "~0.0.1",
+                "pieceVersion": "~1.0.2",
                 "input": {
                   "auth": "{{connections['streto']}}",
                   "total_items": "{{step_2['count']}}",
@@ -115,7 +115,7 @@
               "packageType": "REGISTRY",
               "pieceType": "OFFICIAL",
               "pieceName": "@lagomus/piece-streto",
-              "pieceVersion": "~0.0.1",
+              "pieceVersion": "~1.0.2",
               "input": {
                 "auth": "{{connections['streto']}}",
                 "catalog_id": "{{step_1['catalogId']}}"
@@ -129,7 +129,7 @@
             "packageType": "REGISTRY",
             "pieceType": "OFFICIAL",
             "pieceName": "@lagomus/piece-streto",
-            "pieceVersion": "~0.0.1",
+            "pieceVersion": "~1.0.2",
             "input": {
               "auth": "{{connections['streto']}}",
               "catalog_name": "mla"
@@ -143,7 +143,7 @@
           "packageType": "REGISTRY",
           "pieceType": "OFFICIAL",
           "pieceName": "@lagomus/piece-streto",
-          "pieceVersion": "~0.0.1",
+          "pieceVersion": "~1.0.2",
           "input": {
             "auth": "{{connections['streto']}}",
             "filter_codes": [
