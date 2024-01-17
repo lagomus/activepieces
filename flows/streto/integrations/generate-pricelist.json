@@ -1,7 +1,6 @@
 {
-  "id": "FRQ3yRZGiDkRhYuHrG6ZE",
-  "created": "1702917271752",
-  "updated": "1702917271752",
+  "created": "1705488317855",
+  "updated": "1705488317855",
   "name": "generate-pricelist",
   "description": "",
   "tags": [],
@@ -19,86 +18,100 @@
       "valid": true,
       "displayName": "Webhook Trigger",
       "nextAction": {
-        "displayName": "Get next row(s)",
-        "name": "step_1",
+        "name": "step_5",
+        "type": "CODE",
         "valid": true,
-        "type": "PIECE",
         "settings": {
-          "packageType": "REGISTRY",
-          "pieceType": "OFFICIAL",
-          "pieceName": "@activepieces/piece-google-sheets",
-          "pieceVersion": "~0.7.4",
-          "input": {
-            "auth": "{{connections['google-sheets']}}",
-            "spreadsheet_id": "14ZQ7AtX5FPMGZpqVzhzRXpEBupk7vWdTjjR6jBUGVBg",
-            "sheet_id": 1363601301,
-            "memKey": "row_number",
-            "groupSize": "100",
-            "include_team_drives": false
+          "input": {},
+          "sourceCode": {
+            "code": "export const code = async (inputs) => {\n  return Date.now();\n};",
+            "packageJson": "\n      {\n        \"dependencies\": {\n        }\n      }"
           },
-          "inputUiInfo": {},
-          "actionName": "get_next_rows"
+          "inputUiInfo": {}
         },
         "nextAction": {
-          "displayName": "Generate price list from Google Sheets",
-          "name": "step_2",
-          "valid": true,
+          "name": "step_1",
           "type": "PIECE",
+          "valid": true,
           "settings": {
-            "packageType": "REGISTRY",
-            "pieceType": "OFFICIAL",
-            "pieceName": "@lagomus/piece-streto",
-            "pieceVersion": "~0.0.1",
             "input": {
-              "auth": "{{connections['streto']}}",
-              "catalog_name": "{{trigger['body']['catalogName']}}",
-              "list_name": "default",
-              "rules": "{{step_1}}"
+              "auth": "{{connections['google-sheets']}}",
+              "memKey": "{{step_5}}",
+              "sheet_id": 1363601301,
+              "groupSize": "100",
+              "spreadsheet_id": "14ZQ7AtX5FPMGZpqVzhzRXpEBupk7vWdTjjR6jBUGVBg",
+              "include_team_drives": false
             },
+            "pieceName": "@activepieces/piece-google-sheets",
+            "pieceType": "OFFICIAL",
+            "actionName": "get_next_rows",
             "inputUiInfo": {},
-            "actionName": "generate_pricelist"
+            "packageType": "REGISTRY",
+            "pieceVersion": "0.7.4"
           },
           "nextAction": {
-            "displayName": "Convert JSON to CSV",
-            "name": "step_3",
-            "valid": true,
+            "name": "step_2",
             "type": "PIECE",
+            "valid": true,
             "settings": {
-              "packageType": "REGISTRY",
-              "pieceType": "OFFICIAL",
-              "pieceName": "@activepieces/piece-csv",
-              "pieceVersion": "~0.3.0",
               "input": {
-                "csv_object": "{{step_2['priceLists']}}",
-                "has_headers": true,
-                "delimiter_type": ","
+                "auth": "{{connections['_lagomus_piece-streto']}}",
+                "rules": "{{step_1}}",
+                "list_name": "default",
+                "catalog_name": "{{trigger['body']['catalogName']}}"
               },
+              "pieceName": "@lagomus/piece-streto",
+              "pieceType": "OFFICIAL",
+              "actionName": "generate_pricelist",
               "inputUiInfo": {},
-              "actionName": "convert_json_to_csv"
+              "packageType": "REGISTRY",
+              "pieceVersion": "1.0.2"
             },
             "nextAction": {
-              "displayName": "Create new file",
-              "name": "step_4",
-              "valid": true,
+              "name": "step_3",
               "type": "PIECE",
+              "valid": true,
               "settings": {
-                "packageType": "REGISTRY",
-                "pieceType": "OFFICIAL",
-                "pieceName": "@activepieces/piece-google-drive",
-                "pieceVersion": "~0.5.4",
                 "input": {
-                  "auth": "{{connections['google-drive']}}",
-                  "fileName": "price_lists.csv",
-                  "text": "{{step_3}}",
-                  "fileType": "plain/text",
-                  "include_team_drives": false
+                  "csv_object": "{{step_2['priceLists']}}",
+                  "has_headers": true,
+                  "delimiter_type": ","
                 },
+                "pieceName": "@activepieces/piece-csv",
+                "pieceType": "OFFICIAL",
+                "actionName": "convert_json_to_csv",
                 "inputUiInfo": {},
-                "actionName": "create_new_gdrive_file"
-              }
-            }
-          }
-        }
+                "packageType": "REGISTRY",
+                "pieceVersion": "0.3.0"
+              },
+              "nextAction": {
+                "name": "step_4",
+                "type": "PIECE",
+                "valid": true,
+                "settings": {
+                  "input": {
+                    "auth": "{{connections['google-drive']}}",
+                    "text": "{{step_3}}",
+                    "fileName": "price_lists.csv",
+                    "fileType": "text/csv",
+                    "include_team_drives": false
+                  },
+                  "pieceName": "@activepieces/piece-google-drive",
+                  "pieceType": "OFFICIAL",
+                  "actionName": "create_new_gdrive_file",
+                  "inputUiInfo": {},
+                  "packageType": "REGISTRY",
+                  "pieceVersion": "0.5.9"
+                },
+                "displayName": "Create new file"
+              },
+              "displayName": "Convert JSON to CSV"
+            },
+            "displayName": "Generate price list from Google Sheets"
+          },
+          "displayName": "Get next row(s)"
+        },
+        "displayName": "Code"
       },
       "type": "WEBHOOK",
       "settings": {
@@ -106,9 +119,5 @@
       }
     },
     "valid": true
-  },
-  "userId": null,
-  "imageUrl": null,
-  "featuredDescription": "",
-  "isFeatured": false
+  }
 }
