@@ -38,7 +38,7 @@
               "packageType": "REGISTRY",
               "pieceType": "OFFICIAL",
               "pieceName": "@lagomus/piece-mercadolibre",
-              "pieceVersion": "~1.0.2",
+              "pieceVersion": "~1.0.3",
               "input": {
                 "auth": "{{connections['mercadolibre']}}",
                 "category": "{{step_3.item}}"
@@ -56,7 +56,7 @@
               "packageType": "REGISTRY",
               "pieceType": "OFFICIAL",
               "pieceName": "@lagomus/piece-streto",
-              "pieceVersion": "~1.0.2",
+              "pieceVersion": "~1.0.3",
               "input": {
                 "auth": "{{connections['streto']}}"
               },
@@ -70,7 +70,7 @@
           "packageType": "REGISTRY",
           "pieceType": "OFFICIAL",
           "pieceName": "@lagomus/piece-mercadolibre",
-          "pieceVersion": "~1.0.2",
+          "pieceVersion": "~1.0.3",
           "input": {
             "auth": "{{connections['mercadolibre']}}",
             "parent_category": "MLA1292"
