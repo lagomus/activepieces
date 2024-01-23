@@ -51,7 +51,7 @@ type StretoShippingMethodItem = {
 //--------------------------------------------- ML order items
 type MLOrderItems = {
   id?: string;
-  productId?: string;
+  productId?: string | null;
   finalProductId?: string;
   variantOptions?: VariantOptions;
   qtyOrdered: number;
@@ -469,6 +469,7 @@ type PersonalInfo = {
 type ShippingMethod = {
   carrierCode: string;
   methodCode: string;
+  strategyCode: string;
   totals: ShippingTotals;
   items: StretoShippingMethodItem[];
 };

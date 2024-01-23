@@ -1,7 +1,7 @@
 {
-  "id": "mu9JuhL550H8UO4154Ixe",
-  "created": "1703194976834",
-  "updated": "1703194976834",
+  "id": "mTX00sJoP3ygFt21lGRNT",
+  "created": "1706035312543",
+  "updated": "1706035312543",
   "name": "New order",
   "description": "",
   "tags": [],
@@ -36,17 +36,6 @@
                 "displayName": "Code",
                 "name": "step_6",
                 "valid": true,
-                "type": "CODE",
-                "settings": {
-                  "sourceCode": {
-                    "packageJson": "\n      {\n        \"dependencies\": {\n        }\n      }",
-                    "code": "export const code = async (inputs) => {\n  return JSON.stringify(inputs.attributes);\n};"
-                  },
-                  "input": {
-                    "attributes": "attributes.sku"
-                  },
-                  "inputUiInfo": {}
-                },
                 "nextAction": {
                   "displayName": "Fetch Products",
                   "name": "step_5",
@@ -55,17 +44,6 @@
                     "displayName": "Code",
                     "name": "step_8",
                     "valid": true,
-                    "type": "CODE",
-                    "settings": {
-                      "sourceCode": {
-                        "packageJson": "\n      {\n        \"dependencies\": {\n        }\n      }",
-                        "code": "export const code = async (inputs) => {\n  return inputs.code;\n};"
-                      },
-                      "input": {
-                        "code": "\"store/cdn_base_url\""
-                      },
-                      "inputUiInfo": {}
-                    },
                     "nextAction": {
                       "displayName": "Fetch Settings",
                       "name": "step_7",
@@ -83,9 +61,9 @@
                             "packageType": "REGISTRY",
                             "pieceType": "OFFICIAL",
                             "pieceName": "@lagomus/piece-streto",
-                            "pieceVersion": "~1.0.2",
+                            "pieceVersion": "~1.0.4",
                             "input": {
-                              "auth": "{{connections['streto']}}",
+                              "auth": "{{connections['_lagomus_piece-streto']}}",
                               "order": [
                                 "{{step_1['order']}}"
                               ],
@@ -114,9 +92,9 @@
                         "packageType": "REGISTRY",
                         "pieceType": "OFFICIAL",
                         "pieceName": "@lagomus/piece-streto",
-                        "pieceVersion": "~1.0.3",
+                        "pieceVersion": "~1.0.4",
                         "input": {
-                          "auth": "{{connections['streto']}}",
+                          "auth": "{{connections['_lagomus_piece-streto']}}",
                           "filter_codes": [
                             "{{step_8}}"
                           ]
@@ -124,6 +102,17 @@
                         "inputUiInfo": {},
                         "actionName": "fetch_settings"
                       }
+                    },
+                    "type": "CODE",
+                    "settings": {
+                      "sourceCode": {
+                        "packageJson": "\n      {\n        \"dependencies\": {\n        }\n      }",
+                        "code": "export const code = async (inputs) => {\n  return inputs.code;\n};"
+                      },
+                      "input": {
+                        "code": "\"store/cdn_base_url\""
+                      },
+                      "inputUiInfo": {}
                     }
                   },
                   "type": "PIECE",
@@ -131,16 +120,30 @@
                     "packageType": "REGISTRY",
                     "pieceType": "OFFICIAL",
                     "pieceName": "@lagomus/piece-streto",
-                    "pieceVersion": "~1.0.3",
+                    "pieceVersion": "~1.0.4",
                     "input": {
-                      "auth": "{{connections['streto']}}",
+                      "auth": "{{connections['_lagomus_piece-streto']}}",
                       "catalog_id": "{{step_4['catalogId']}}",
                       "filter_attribute": "{{step_6}}",
-                      "filter_array": "{{step_1['skus']}}"
+                      "filter_array": "{{step_1['skus']}}",
+                      "with_stock": false,
+                      "with_price": false,
+                      "with_attribute_set_names": false
                     },
                     "inputUiInfo": {},
                     "actionName": "fetch_products"
                   }
+                },
+                "type": "CODE",
+                "settings": {
+                  "sourceCode": {
+                    "packageJson": "\n      {\n        \"dependencies\": {\n        }\n      }",
+                    "code": "export const code = async (inputs) => {\n  return JSON.stringify(inputs.attributes);\n};"
+                  },
+                  "input": {
+                    "attributes": "attributes.sku"
+                  },
+                  "inputUiInfo": {}
                 }
               },
               "type": "PIECE",
@@ -148,9 +151,9 @@
                 "packageType": "REGISTRY",
                 "pieceType": "OFFICIAL",
                 "pieceName": "@lagomus/piece-streto",
-                "pieceVersion": "~1.0.3",
+                "pieceVersion": "~1.0.4",
                 "input": {
-                  "auth": "{{connections['streto']}}",
+                  "auth": "{{connections['_lagomus_piece-streto']}}",
                   "catalog_name": "mercado_libre"
                 },
                 "inputUiInfo": {},
@@ -162,9 +165,9 @@
               "packageType": "REGISTRY",
               "pieceType": "OFFICIAL",
               "pieceName": "@lagomus/piece-mercadolibre",
-              "pieceVersion": "~1.0.3",
+              "pieceVersion": "~1.0.4",
               "input": {
-                "auth": "{{connections['mercadolibre']}}",
+                "auth": "{{connections['_lagomus_piece-mercadolibre']}}",
                 "orderId": "{{step_2['orderId']}}"
               },
               "inputUiInfo": {},
@@ -176,9 +179,9 @@
             "packageType": "REGISTRY",
             "pieceType": "OFFICIAL",
             "pieceName": "@lagomus/piece-mercadolibre",
-            "pieceVersion": "~1.0.3",
+            "pieceVersion": "~1.0.4",
             "input": {
-              "auth": "{{connections['mercadolibre']}}",
+              "auth": "{{connections['_lagomus_piece-mercadolibre']}}",
               "orderId": "{{step_2['orderId']}}"
             },
             "inputUiInfo": {},

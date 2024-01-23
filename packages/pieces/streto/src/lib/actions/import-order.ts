@@ -19,68 +19,59 @@ const mappingProducts = (
   stretoProducts: Product[],
   shipping_items: StretoShippingMethodItem[],
   cdnUrl: string,
-  noMatchedProducts: OrderItem[],
   orderItems: MLOrderItems[]
 ) => {
   return orderProducts.forEach((pr: OrderItem) => {
     const pId = randomUUID();
-    if (stretoProducts.length > 0) {
-      const stretoProduct = stretoProducts.find(
-        (p) => p.attributes?.sku === pr.item.seller_sku
+    const stretoProduct = stretoProducts?.find(
+      (p) => p.attributes?.sku === pr.item.seller_sku
+    );
+    let image = undefined;
+    let imageUrl = undefined;
+    if (cdnUrl !== '') {
+      image = stretoProduct?.attributes.images?.find((i) =>
+        i.roles.find((r) => r === 'thumbnail')
       );
-      let image = undefined;
-      let imageUrl = undefined;
-      if (cdnUrl !== '') {
+      if (image === undefined) {
         image = stretoProduct?.attributes.images?.find((i) =>
-          i.roles.find((r) => r === 'thumbnail')
+          i.roles.find((r) => r === 'default')
         );
-        if (image === undefined) {
-          image = stretoProduct?.attributes.images?.find((i) =>
-            i.roles.find((r) => r === 'default')
-          );
-        }
-        if (image !== undefined) {
-          imageUrl = `${cdnUrl}/${image.id}`;
-        }
       }
-
-      let details =
-        cdnUrl !== '' && imageUrl !== undefined
-          ? {
-              name: pr.item.title,
-              sku: pr.item.seller_sku,
-              imageUrl,
-            }
-          : {
-              name: pr.item.title,
-              sku: pr.item.seller_sku,
-            };
-      if (stretoProduct !== undefined) {
-        orderItems.push({
-          productId: pId,
-          qtyOrdered: pr.quantity,
-          qtyInvoiced: 0,
-          qtyShipped: 0,
-          shippable: true,
-          taxes: [],
-          details,
-          totals: {
-            unit: pr.unit_price,
-            discount: 0,
-            unitDiscount: 0,
-            tax: 0,
-            subtotal: pr.quantity * pr.unit_price,
-            grandTotal: pr.quantity * pr.unit_price,
-          },
-          additionalInformation: {},
-        });
-        shipping_items.push({ itemId: pId, qty: pr.quantity });
-      } else {
-        noMatchedProducts.push(pr);
+      if (image !== undefined) {
+        imageUrl = `${cdnUrl}/${image.id}`;
       }
-    } else {
-      noMatchedProducts.push(pr);
     }
+
+    let details =
+      cdnUrl !== '' && imageUrl !== undefined
+        ? {
+            name: pr.item.title,
+            sku: pr.item.seller_sku,
+            imageUrl,
+          }
+        : {
+            name: pr.item.title,
+            sku: pr.item.seller_sku,
+          };
+    orderItems.push({
+      productId: stretoProducts.length > 0 ? pId : null,
+      qtyOrdered: pr.quantity,
+      qtyInvoiced: 0,
+      qtyShipped: 0,
+      shippable: true,
+      taxes: [],
+      details,
+      totals: {
+        unit: pr.unit_price,
+        discount: 0,
+        unitDiscount: 0,
+        tax: 0,
+        subtotal: pr.quantity * pr.unit_price,
+        grandTotal: pr.quantity * pr.unit_price,
+      },
+      additionalInformation: {},
+    });
+    shipping_items.push({ itemId: pId, qty: pr.quantity });
   });
 };
 
@@ -90,8 +81,7 @@ const getOrderMapping = (
   shippingAddress: Address,
   billingAddress: Address,
   shipping: MLShipping,
-  shipping_items: StretoShippingMethodItem[],
-  noMatchedProducts: OrderItem[]
+  shipping_items: StretoShippingMethodItem[]
 ) => {
   return {
     externalId: order[0].id.toString(),
@@ -180,7 +170,9 @@ const getOrderMapping = (
     ],
     totals: {
       subtotal: order[0].total_amount,
-      shipping: shipping.shipping_option?.cost ? shipping.base_cost + shipping.shipping_option?.cost : shipping.base_cost,
+      shipping: shipping.shipping_option?.cost
+        ? shipping.base_cost + shipping.shipping_option?.cost
+        : shipping.base_cost,
       globalTax: 0,
       tax: order[0].taxes?.amount || 0,
       promotionsDiscount: 0,
@@ -190,13 +182,16 @@ const getOrderMapping = (
       grandTotal:
         order[0].total_amount +
         shipping.base_cost +
-        shipping.shipping_option?.cost ? shipping.shipping_option?.cost : 0+
-        order[0].taxes?.amount ? order[0].taxes?.amount : 0 +
-        order[0].coupon?.amount ? order[0].coupon?.amount : 0,
+        shipping.shipping_option?.cost
+          ? shipping.shipping_option?.cost
+          : 0 + order[0].taxes?.amount
+          ? order[0].taxes?.amount
+          : 0 + order[0].coupon?.amount
+          ? order[0].coupon?.amount
+          : 0,
     },
     additionalInformation: {
       origin: 'Mercado Libre',
-      noMatchedProducts,
       order: JSON.stringify(order),
       shipping: shipping ? JSON.stringify(shipping) : [],
     },
@@ -242,7 +237,6 @@ export const import_order = createAction({
     ] as Product[];
     const cdnUrl = context.propsValue['cdn_url'] as string;
     const orderProducts: OrderItem[] = order[0].order_items;
-    const noMatchedProducts: OrderItem[] = [];
 
     const orderItems: MLOrderItems[] = [];
     let shipping_items: StretoShippingMethodItem[] = [];
@@ -252,7 +246,6 @@ export const import_order = createAction({
         stretoProducts,
         shipping_items,
         cdnUrl,
-        noMatchedProducts,
         orderItems
       );
     }
@@ -267,8 +260,7 @@ export const import_order = createAction({
       shippingAddress,
       billingAddress,
       shipping,
-      shipping_items,
-      noMatchedProducts
+      shipping_items
     );
     let orderImported: any = {};
     await httpClient
@@ -282,10 +274,10 @@ export const import_order = createAction({
       })
       .then((r) => (orderImported = r.status === 200 ? r.body : {}))
       .catch((error) => {
-        orderImported = error._err
-      });
+        orderImported = error._err;
+     });
     return {
-      orderImported,
+      orderImported
     };
   },
 });

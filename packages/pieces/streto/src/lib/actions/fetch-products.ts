@@ -66,7 +66,7 @@ export const fetch_products = createAction({
         filterAttribute && {
           where: {
             and: [
-              `{${filterAttribute}:{"inq":${filterArray}}},{"type":{"neq":"variant"}}`,
+              {"attributes.sku":{inq:`${filterArray}`}},{type:{neq:"variant"}},
             ],
           },
         }),

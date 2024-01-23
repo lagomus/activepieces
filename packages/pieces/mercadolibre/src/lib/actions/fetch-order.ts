@@ -26,7 +26,7 @@ export const fetch_order = createAction({
     });
     const skusIntermediate = order.body.order_items.map(
       (o: OrderItem) =>
-        o.item.seller_sku || o.item.seller_custom_field?.includes('sku')
+        (o.item.seller_sku ?? "") || o.item.seller_custom_field?.includes('sku')
     );
     return {
       order: order.body,
