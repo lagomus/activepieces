@@ -18,7 +18,7 @@ export const fetch_products = createAction({
       description: 'Use to pass attribute to filter by',
       required: false,
     }),
-    filter_array: Property.LongText({
+    filter_array: Property.Array({
       displayName: 'Array filter',
       description: 'Use to pass an array of elements to filter by',
       required: false,
@@ -57,16 +57,17 @@ export const fetch_products = createAction({
   async run(context) {
     const catalogId = context.propsValue['catalog_id'];
     const filterArray = context.propsValue['filter_array'];
-    const filterAttribute = context.propsValue['filter_attribute'];
+    const filterAttribute = context.propsValue['filter_attribute']; //problemas en el where por template string. Por eso no se usa.
     const skip = context.propsValue['skip'];
     const limit = context.propsValue['limit'];
 
     const filter = {
       ...(filterArray &&
-        filterAttribute && {
+        {
           where: {
             and: [
-              {"attributes.sku":{inq:`${filterArray}`}},{type:{neq:"variant"}},
+              { 'attributes.sku': { inq: JSON.parse(`${filterArray}`) } },
+              { type: { neq: 'variant' } },
             ],
           },
         }),

@@ -10,7 +10,8 @@ export const import_reviews_data = createAction({
   props: {
     productsIds: Property.Array({
       displayName: 'Product Ids',
-      description: 'Product Streto Id with correspondent Mercado Libre product id',
+      description:
+        'Product Streto Id with correspondent Mercado Libre product id',
       required: true,
       defaultValue: [],
     }),
@@ -35,28 +36,36 @@ export const import_reviews_data = createAction({
     const stars = context.propsValue['average_rating'];
     const reviewsCount = context.propsValue['total_reviews'];
     const MlProductId = context.propsValue['MlProductId'];
-    const currentStretoId = productsIds.map(p => p.find((e:any) => e[1] === MlProductId) );
-    let url = ""
+    const currentStretoId = productsIds.map((p) =>
+      p.find((e: any) => e[1] === MlProductId)
+    );
+    let url = '';
     if (currentStretoId !== undefined) {
       const productId = currentStretoId[0][0];
-      url = `${context.auth.baseUrl}/app/products/${productId}` 
+      url = `${context.auth.baseUrl}/app/products/${productId}`;
     }
-    const response = await httpClient.sendRequest<any>({
-      method: HttpMethod.PATCH,
-      headers: {
-        'x-api-key': context.auth.apiKey,
-      },
-      url,
-      body: {
-        attributes: {
-          reviews_count: reviewsCount || 0,
-          rating: stars || 0
-        }
-      }
-    });
+    let response: any = {};
+    await httpClient
+      .sendRequest<any>({
+        method: HttpMethod.PATCH,
+        headers: {
+          'x-api-key': context.auth.apiKey,
+        },
+        url,
+        body: {
+          attributes: {
+            reviews_count: reviewsCount || 0,
+            rating: stars || 0,
+          },
+        },
+      })
+      .then((r) => (response = r.status === 200 ? r.body : {}))
+      .catch((error) => {
+        response = error._err;
+      });
 
     return {
-      response
+      response,
     };
   },
 });

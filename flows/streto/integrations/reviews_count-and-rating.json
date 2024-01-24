@@ -49,7 +49,7 @@
                       "packageType": "REGISTRY",
                       "pieceType": "OFFICIAL",
                       "pieceName": "@lagomus/piece-streto",
-                      "pieceVersion": "1.0.3",
+                      "pieceVersion": "1.0.4",
                       "input": {
                         "auth": "{{connections['marcovecchio']}}",
                         "productsIds": [
@@ -112,7 +112,7 @@
             "packageType": "REGISTRY",
             "pieceType": "OFFICIAL",
             "pieceName": "@lagomus/piece-streto",
-            "pieceVersion": "1.0.3",
+            "pieceVersion": "1.0.4",
             "input": {
               "auth": "{{connections['marcovecchio']}}",
               "catalog_id": "{{step_1['catalogId']}}"
@@ -126,7 +126,7 @@
           "packageType": "REGISTRY",
           "pieceType": "OFFICIAL",
           "pieceName": "@lagomus/piece-streto",
-          "pieceVersion": "1.0.3",
+          "pieceVersion": "1.0.4",
           "input": {
             "auth": "{{connections['marcovecchio']}}",
             "catalog_name": "default"
