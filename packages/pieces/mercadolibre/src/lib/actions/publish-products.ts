@@ -104,7 +104,8 @@ export const publish_products = createAction({
           });
           await context.store.put<string>(
             item.attributes['sku'],
-            published.body.id
+            published.body.id,
+            StoreScope.FLOW
           );
         } catch (e) {
           context.store.put<string>(
