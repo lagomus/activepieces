@@ -1,8 +1,8 @@
 {
-  "id": "mTX00sJoP3ygFt21lGRNT",
-  "created": "1706035312543",
-  "updated": "1706035312543",
-  "name": "New order",
+  "id": "eE3zQRzLB9qMNqx1w40eY",
+  "created": "1706112863694",
+  "updated": "1706112863694",
+  "name": "new order",
   "description": "",
   "tags": [],
   "pieces": [
@@ -11,7 +11,7 @@
   ],
   "blogUrl": "",
   "template": {
-    "displayName": "New order",
+    "displayName": "new order",
     "trigger": {
       "name": "trigger",
       "valid": true,
@@ -20,174 +20,6 @@
         "displayName": "Code",
         "name": "step_2",
         "valid": true,
-        "nextAction": {
-          "displayName": "Fetch Order",
-          "name": "step_1",
-          "valid": true,
-          "nextAction": {
-            "displayName": "Fetch Order Shipment",
-            "name": "step_3",
-            "valid": true,
-            "nextAction": {
-              "displayName": "Fetch Catalog Id",
-              "name": "step_4",
-              "valid": true,
-              "nextAction": {
-                "displayName": "Code",
-                "name": "step_6",
-                "valid": true,
-                "nextAction": {
-                  "displayName": "Fetch Products",
-                  "name": "step_5",
-                  "valid": true,
-                  "nextAction": {
-                    "displayName": "Code",
-                    "name": "step_8",
-                    "valid": true,
-                    "nextAction": {
-                      "displayName": "Fetch Settings",
-                      "name": "step_7",
-                      "valid": true,
-                      "nextAction": {
-                        "displayName": "Code",
-                        "name": "step_10",
-                        "valid": true,
-                        "nextAction": {
-                          "displayName": "Import Order",
-                          "name": "step_9",
-                          "valid": true,
-                          "type": "PIECE",
-                          "settings": {
-                            "packageType": "REGISTRY",
-                            "pieceType": "OFFICIAL",
-                            "pieceName": "@lagomus/piece-streto",
-                            "pieceVersion": "~1.0.4",
-                            "input": {
-                              "auth": "{{connections['_lagomus_piece-streto']}}",
-                              "order": [
-                                "{{step_1['order']}}"
-                              ],
-                              "orderShipment": "{{step_3['orderShipment']}}",
-                              "stretoOrderItems": "{{step_5['products']}}",
-                              "cdn_url": "{{step_10}}"
-                            },
-                            "inputUiInfo": {},
-                            "actionName": "import_order"
-                          }
-                        },
-                        "type": "CODE",
-                        "settings": {
-                          "sourceCode": {
-                            "packageJson": "\n      {\n        \"dependencies\": {\n        }\n      }",
-                            "code": "export const code = async (inputs) => {\n  return inputs.cdn_url[\"store/cdn_base_url\"];\n};"
-                          },
-                          "input": {
-                            "cdn_url": "{{step_7['settings']}}"
-                          },
-                          "inputUiInfo": {}
-                        }
-                      },
-                      "type": "PIECE",
-                      "settings": {
-                        "packageType": "REGISTRY",
-                        "pieceType": "OFFICIAL",
-                        "pieceName": "@lagomus/piece-streto",
-                        "pieceVersion": "~1.0.4",
-                        "input": {
-                          "auth": "{{connections['_lagomus_piece-streto']}}",
-                          "filter_codes": [
-                            "{{step_8}}"
-                          ]
-                        },
-                        "inputUiInfo": {},
-                        "actionName": "fetch_settings"
-                      }
-                    },
-                    "type": "CODE",
-                    "settings": {
-                      "sourceCode": {
-                        "packageJson": "\n      {\n        \"dependencies\": {\n        }\n      }",
-                        "code": "export const code = async (inputs) => {\n  return inputs.code;\n};"
-                      },
-                      "input": {
-                        "code": "\"store/cdn_base_url\""
-                      },
-                      "inputUiInfo": {}
-                    }
-                  },
-                  "type": "PIECE",
-                  "settings": {
-                    "packageType": "REGISTRY",
-                    "pieceType": "OFFICIAL",
-                    "pieceName": "@lagomus/piece-streto",
-                    "pieceVersion": "~1.0.4",
-                    "input": {
-                      "auth": "{{connections['_lagomus_piece-streto']}}",
-                      "catalog_id": "{{step_4['catalogId']}}",
-                      "filter_attribute": "{{step_6}}",
-                      "filter_array": "{{step_1['skus']}}",
-                      "with_stock": false,
-                      "with_price": false,
-                      "with_attribute_set_names": false
-                    },
-                    "inputUiInfo": {},
-                    "actionName": "fetch_products"
-                  }
-                },
-                "type": "CODE",
-                "settings": {
-                  "sourceCode": {
-                    "packageJson": "\n      {\n        \"dependencies\": {\n        }\n      }",
-                    "code": "export const code = async (inputs) => {\n  return JSON.stringify(inputs.attributes);\n};"
-                  },
-                  "input": {
-                    "attributes": "attributes.sku"
-                  },
-                  "inputUiInfo": {}
-                }
-              },
-              "type": "PIECE",
-              "settings": {
-                "packageType": "REGISTRY",
-                "pieceType": "OFFICIAL",
-                "pieceName": "@lagomus/piece-streto",
-                "pieceVersion": "~1.0.4",
-                "input": {
-                  "auth": "{{connections['_lagomus_piece-streto']}}",
-                  "catalog_name": "mercado_libre"
-                },
-                "inputUiInfo": {},
-                "actionName": "fetch_catalog_id"
-              }
-            },
-            "type": "PIECE",
-            "settings": {
-              "packageType": "REGISTRY",
-              "pieceType": "OFFICIAL",
-              "pieceName": "@lagomus/piece-mercadolibre",
-              "pieceVersion": "~1.0.4",
-              "input": {
-                "auth": "{{connections['_lagomus_piece-mercadolibre']}}",
-                "orderId": "{{step_2['orderId']}}"
-              },
-              "inputUiInfo": {},
-              "actionName": "fetch_order_shipment"
-            }
-          },
-          "type": "PIECE",
-          "settings": {
-            "packageType": "REGISTRY",
-            "pieceType": "OFFICIAL",
-            "pieceName": "@lagomus/piece-mercadolibre",
-            "pieceVersion": "~1.0.4",
-            "input": {
-              "auth": "{{connections['_lagomus_piece-mercadolibre']}}",
-              "orderId": "{{step_2['orderId']}}"
-            },
-            "inputUiInfo": {},
-            "actionName": "fetch_order"
-          }
-        },
         "type": "CODE",
         "settings": {
           "sourceCode": {
@@ -198,6 +30,157 @@
             "orderId": "{{trigger['body']['resource']}}"
           },
           "inputUiInfo": {}
+        },
+        "nextAction": {
+          "displayName": "Fetch Order",
+          "name": "step_1",
+          "valid": true,
+          "type": "PIECE",
+          "settings": {
+            "packageType": "REGISTRY",
+            "pieceType": "OFFICIAL",
+            "pieceName": "@lagomus/piece-mercadolibre",
+            "pieceVersion": "^1.0.4",
+            "input": {
+              "auth": "{{connections['_lagomus_piece-mercadolibre']}}",
+              "orderId": "{{step_2['orderId']}}"
+            },
+            "inputUiInfo": {},
+            "actionName": "fetch_order"
+          },
+          "nextAction": {
+            "displayName": "Fetch Order Shipment",
+            "name": "step_3",
+            "valid": true,
+            "type": "PIECE",
+            "settings": {
+              "packageType": "REGISTRY",
+              "pieceType": "OFFICIAL",
+              "pieceName": "@lagomus/piece-mercadolibre",
+              "pieceVersion": "^1.0.4",
+              "input": {
+                "auth": "{{connections['_lagomus_piece-mercadolibre']}}",
+                "orderId": "{{step_2['orderId']}}"
+              },
+              "inputUiInfo": {},
+              "actionName": "fetch_order_shipment"
+            },
+            "nextAction": {
+              "displayName": "Fetch Catalog Id",
+              "name": "step_4",
+              "valid": true,
+              "type": "PIECE",
+              "settings": {
+                "packageType": "REGISTRY",
+                "pieceType": "OFFICIAL",
+                "pieceName": "@lagomus/piece-streto",
+                "pieceVersion": "^1.0.4",
+                "input": {
+                  "auth": "{{connections['_lagomus_piece-streto']}}",
+                  "catalog_name": "mercado_libre"
+                },
+                "inputUiInfo": {},
+                "actionName": "fetch_catalog_id"
+              },
+              "nextAction": {
+                "displayName": "Fetch Products",
+                "name": "step_5",
+                "valid": true,
+                "nextAction": {
+                  "displayName": "Code",
+                  "name": "step_8",
+                  "valid": true,
+                  "type": "CODE",
+                  "settings": {
+                    "sourceCode": {
+                      "packageJson": "\n      {\n        \"dependencies\": {\n        }\n      }",
+                      "code": "export const code = async (inputs) => {\n  return inputs.code;\n};"
+                    },
+                    "input": {
+                      "code": "\"store/cdn_base_url\""
+                    },
+                    "inputUiInfo": {}
+                  },
+                  "nextAction": {
+                    "displayName": "Fetch Settings",
+                    "name": "step_7",
+                    "valid": true,
+                    "type": "PIECE",
+                    "settings": {
+                      "packageType": "REGISTRY",
+                      "pieceType": "OFFICIAL",
+                      "pieceName": "@lagomus/piece-streto",
+                      "pieceVersion": "^1.0.4",
+                      "input": {
+                        "auth": "{{connections['_lagomus_piece-streto']}}",
+                        "filter_codes": [
+                          "{{step_8}}"
+                        ]
+                      },
+                      "inputUiInfo": {},
+                      "actionName": "fetch_settings"
+                    },
+                    "nextAction": {
+                      "displayName": "Code",
+                      "name": "step_10",
+                      "valid": true,
+                      "type": "CODE",
+                      "settings": {
+                        "sourceCode": {
+                          "packageJson": "\n      {\n        \"dependencies\": {\n        }\n      }",
+                          "code": "export const code = async (inputs) => {\n  return inputs.cdn_url[\"store/cdn_base_url\"];\n};"
+                        },
+                        "input": {
+                          "cdn_url": "{{step_7['settings']}}"
+                        },
+                        "inputUiInfo": {}
+                      },
+                      "nextAction": {
+                        "displayName": "Import Order",
+                        "name": "step_9",
+                        "valid": true,
+                        "type": "PIECE",
+                        "settings": {
+                          "packageType": "REGISTRY",
+                          "pieceType": "OFFICIAL",
+                          "pieceName": "@lagomus/piece-streto",
+                          "pieceVersion": "^1.0.4",
+                          "input": {
+                            "auth": "{{connections['_lagomus_piece-streto']}}",
+                            "order": [
+                              "{{step_1['order']}}"
+                            ],
+                            "orderShipment": "{{step_3['orderShipment']}}",
+                            "stretoOrderItems": "{{step_5['products']}}",
+                            "cdn_url": "{{step_10}}"
+                          },
+                          "inputUiInfo": {},
+                          "actionName": "import_order"
+                        }
+                      }
+                    }
+                  }
+                },
+                "type": "PIECE",
+                "settings": {
+                  "packageType": "REGISTRY",
+                  "pieceType": "OFFICIAL",
+                  "pieceName": "@lagomus/piece-streto",
+                  "pieceVersion": "~1.0.4",
+                  "input": {
+                    "auth": "{{connections['_lagomus_piece-streto']}}",
+                    "catalog_id": "{{step_4['catalogId']}}",
+                    "filter_array": "{{step_1['skus']}}",
+                    "with_stock": false,
+                    "with_price": false,
+                    "with_attribute_set_names": false
+                  },
+                  "inputUiInfo": {},
+                  "actionName": "fetch_products"
+                }
+              }
+            }
+          }
         }
       },
       "type": "WEBHOOK",
