@@ -30,6 +30,7 @@ export interface Item {
   variation_attributes: any[];
   seller_sku?: string;
   seller_custom_field?: any[];
+  sold_quantity?: number;
 }
 
 export interface Buyer {

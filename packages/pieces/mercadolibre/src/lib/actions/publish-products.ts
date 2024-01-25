@@ -36,18 +36,30 @@ export const publish_products = createAction({
     if (mlaId !== undefined && mlaId !== null) {
       // EDIT EXISTING PRODUCT
       try {
+        let sold = false;
+        const pub = (
+          await httpClient.sendRequest<Item>({
+            method: HttpMethod.GET,
+            headers: { Authorization: `Bearer ${token}` },
+            url: `https://api.mercadolibre.com/items/${mlaId}`,
+          })
+        ).body;
+
+        if (pub['sold_quantity'] !== 0) {
+          sold = true;
+        }
+
         await httpClient.sendRequest<Item>({
           method: HttpMethod.PUT,
           headers: { Authorization: `Bearer ${token}` },
           url: `https://api.mercadolibre.com/items/${mlaId}`,
           body: {
-            ...{ available_quantity: item.qty },
-            ...{ price: item.price },
-            ...{
-              pictures: item.attributes['images']?.map((i) => ({
-                source: `${cdnBaseUrl}/${i.id}`,
-              })),
-            },
+            ...(!sold && { title: item.attributes.name }),
+            available_quantity: item.qty,
+            price: item.price,
+            pictures: item.attributes['images']?.map((i) => ({
+              source: `${cdnBaseUrl}/${i.id}`,
+            })),
           },
         });
 
