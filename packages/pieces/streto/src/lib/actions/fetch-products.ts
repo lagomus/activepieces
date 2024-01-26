@@ -22,6 +22,7 @@ export const fetch_products = createAction({
       displayName: 'Array filter',
       description: 'Use to pass an array of elements to filter by',
       required: false,
+      defaultValue: []
     }),
     with_stock: Property.Checkbox({
       displayName: 'With Stock',
@@ -62,7 +63,7 @@ export const fetch_products = createAction({
     const limit = context.propsValue['limit'];
 
     const filter = {
-      ...(filterArray &&
+      ...(filterArray && filterArray?.length > 0 &&
         {
           where: {
             and: [
