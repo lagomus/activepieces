@@ -48,6 +48,31 @@ type StretoShippingMethodItem = {
   qty: number;
 };
 
+//--------------------------------------------- Streto show Items
+type ShowItems = {
+  id?: string;
+  productId?: string | null;
+  qty?: number;
+  qtyRestrictions?: Record<string, unknown>;
+  totals?: {
+    unit?: number;
+    unitDiscount?: number;
+    subtotal?: number;
+    discount?: number;
+    tax?: number;
+    grandTotal?: number;
+    couponsDiscount?: number;
+  };
+  details?: {
+    name?: string;
+    sku?: string;
+    imageUrl?: string;
+  };
+  isAvailable?: boolean;
+  variantOptions?: Record<string, unknown>;
+  customOptions?: Record<string, unknown>;
+  additionalInformation?: Record<string, unknown>;
+}
 //--------------------------------------------- ML order items
 type MLOrderItems = {
   id?: string;
@@ -68,7 +93,11 @@ type VariantOptions = {};
 
 type Tax = {};
 
-type Details = {};
+type Details = {
+  name?: string;
+  sku?: string;
+  imageUrl?: string;
+};
 
 type Totals = {};
 

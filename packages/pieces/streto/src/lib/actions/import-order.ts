@@ -75,6 +75,30 @@ const mappingProducts = (
   });
 };
 
+const getShowItems = (orderItems: MLOrderItems[]) => {
+  if (orderItems.length === 0) {
+    return [];
+  } else {
+    let items: ShowItems[] = [];
+    orderItems.map((o) => {
+      let item: ShowItems = {
+        productId: null
+      };
+      if (o.productId !== null) {
+        item.id = o.id;
+        item.productId = o.productId;
+        item.qty = o.qtyOrdered;
+        item.isAvailable = true;
+        item.details = { ...o.details };
+        item.totals = { ...o.totals };
+        item.variantOptions = o.variantOptions;
+      }
+      items.push(item);
+    });
+    return items;
+  }
+};
+
 const getOrderMapping = (
   order: Order[],
   orderItems: MLOrderItems[],
@@ -192,6 +216,7 @@ const getOrderMapping = (
     },
     additionalInformation: {
       origin: 'Mercado Libre',
+      showItems: getShowItems(orderItems),
       order: JSON.stringify(order),
       shipping: shipping ? JSON.stringify(shipping) : [],
     },
@@ -275,9 +300,9 @@ export const import_order = createAction({
       .then((r) => (orderImported = r.status === 200 ? r.body : {}))
       .catch((error) => {
         orderImported = error._err;
-     });
+      });
     return {
-      orderImported
+      orderImported,
     };
   },
 });
