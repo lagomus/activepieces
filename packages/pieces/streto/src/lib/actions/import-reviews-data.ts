@@ -1,4 +1,8 @@
-import { createAction, Property } from '@activepieces/pieces-framework';
+import {
+  createAction,
+  Property,
+  StoreScope,
+} from '@activepieces/pieces-framework';
 import { httpClient, HttpMethod } from '@activepieces/pieces-common';
 import { stretoAuth } from '../..';
 
@@ -44,8 +48,7 @@ export const import_reviews_data = createAction({
       const productId = currentStretoId[0][0];
       url = `${context.auth.baseUrl}/app/products/${productId}`;
     }
-    let response: any = {};
-    await httpClient
+    return await httpClient
       .sendRequest<any>({
         method: HttpMethod.PATCH,
         headers: {
@@ -59,13 +62,26 @@ export const import_reviews_data = createAction({
           },
         },
       })
-      .then((r) => (response = r.status === 200 ? r.body : {}))
-      .catch((error) => {
-        response = error._err;
+      .then(async (r) => {
+        if (r.status >= 200 && r.status < 300) {
+          let acum = (await context.store.get('success')) as number | null;
+          if (acum !== null) {
+            await context.store.put('successes', acum + 1, StoreScope.PROJECT);
+          } else {
+            await context.store.put('successes', 1, StoreScope.PROJECT);
+          }
+          return {success: `with code ${r.status}`}
+        }
+        else {return {}} 
+      })
+      .catch(async (error) => {
+        let acum = (await context.store.get('fails')) as number | null;
+        if (acum !== null) {
+          await context.store.put('fails', acum + 1, StoreScope.PROJECT);
+        } else {
+          await context.store.put('fails', 1, StoreScope.PROJECT);
+        }
+        return {fail: error}
       });
-
-    return {
-      response,
-    };
   },
 });
