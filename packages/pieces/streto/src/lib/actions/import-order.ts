@@ -82,7 +82,16 @@ const getShowItems = (orderItems: MLOrderItems[]) => {
     let items: ShowItems[] = [];
     orderItems.map((o) => {
       let item: ShowItems = {
-        productId: null
+        productId: null,
+        totals: {
+          unit: 0,
+          unitDiscount: 0,
+          subtotal: 0,
+          discount: 0,
+          tax: 0,
+          grandTotal: 0,
+          couponsDiscount: 0,
+        },
       };
       if (o.productId !== null) {
         item.id = o.id;
@@ -90,13 +99,31 @@ const getShowItems = (orderItems: MLOrderItems[]) => {
         item.qty = o.qtyOrdered;
         item.isAvailable = true;
         item.details = { ...o.details };
-        item.totals = { ...o.totals };
+        item.totals = {
+          unit: o.totals.unit || 0,
+          unitDiscount: o.totals.unitDiscount || 0,
+          subtotal: o.totals.subtotal,
+          discount: o.totals.discount || 0,
+          tax: o.taxes || 0,
+          grandTotal: o.totals.grandTotal || 0,
+          couponsDiscount: 0,
+        };
         item.variantOptions = o.variantOptions;
       }
-      items.push(item);
+      return items.push(item);
     });
     return items;
   }
+};
+
+const getSubtotal = (order: Order[]) => {
+  let subtotal = 0;
+  order.map((o) => {
+    return o.order_items.map((i) => {
+      return (subtotal += i.full_unit_price * i.quantity);
+    });
+  });
+  return subtotal;
 };
 
 const getOrderMapping = (
@@ -171,7 +198,7 @@ const getOrderMapping = (
               regionCode: billingAddress.state?.id,
               city: billingAddress.city?.name,
               postalCode: billingAddress.zip_code,
-              phone: shippingAddress?.receiver_phone,
+              phone: shippingAddress?.receiver_phone !== null ? shippingAddress?.receiver_phone : "",
               notes:
                 billingAddress.comment !== null
                   ? billingAddress.comment
@@ -193,10 +220,10 @@ const getOrderMapping = (
       },
     ],
     totals: {
-      subtotal: order[0].total_amount,
-      shipping: shipping.shipping_option?.cost
-        ? shipping.base_cost + shipping.shipping_option?.cost
-        : shipping.base_cost,
+      subtotal: getSubtotal(order),
+      shipping: shipping.base_cost
+        ? shipping.base_cost
+        : shipping.shipping_option?.cost,
       globalTax: 0,
       tax: order[0].taxes?.amount || 0,
       promotionsDiscount: 0,
@@ -205,14 +232,10 @@ const getOrderMapping = (
       discount: order[0].coupon?.amount || 0,
       grandTotal:
         order[0].total_amount +
-        shipping.base_cost +
-        shipping.shipping_option?.cost
-          ? shipping.shipping_option?.cost
-          : 0 + order[0].taxes?.amount
-          ? order[0].taxes?.amount
-          : 0 + order[0].coupon?.amount
-          ? order[0].coupon?.amount
-          : 0,
+        order[0].taxes?.amount +
+        (shipping.base_cost
+          ? shipping.base_cost
+          : shipping.shipping_option?.cost),
     },
     additionalInformation: {
       origin: 'Mercado Libre',
@@ -287,22 +310,13 @@ export const import_order = createAction({
       shipping,
       shipping_items
     );
-    let orderImported: any = {};
-    await httpClient
-      .sendRequest<StretoOrder>({
-        method: HttpMethod.POST,
-        headers: {
-          'x-api-key': context.auth.apiKey,
-        },
-        url,
-        body: { ...mapping },
-      })
-      .then((r) => (orderImported = r.status === 200 ? r.body : {}))
-      .catch((error) => {
-        orderImported = error._err;
-      });
-    return {
-      orderImported,
-    };
+    return await httpClient.sendRequest<StretoOrder>({
+      method: HttpMethod.POST,
+      headers: {
+        'x-api-key': context.auth.apiKey,
+      },
+      url,
+      body: { ...mapping },
+    });
   },
 });

@@ -54,15 +54,7 @@ type ShowItems = {
   productId?: string | null;
   qty?: number;
   qtyRestrictions?: Record<string, unknown>;
-  totals?: {
-    unit?: number;
-    unitDiscount?: number;
-    subtotal?: number;
-    discount?: number;
-    tax?: number;
-    grandTotal?: number;
-    couponsDiscount?: number;
-  };
+  totals: ItemTotals;
   details?: {
     name?: string;
     sku?: string;
@@ -72,6 +64,16 @@ type ShowItems = {
   variantOptions?: Record<string, unknown>;
   customOptions?: Record<string, unknown>;
   additionalInformation?: Record<string, unknown>;
+}
+
+type ItemTotals = {
+  unit?: number;
+  unitDiscount?: number;
+  subtotal?: number;
+  discount?: number;
+  tax?: Tax;
+  grandTotal?: number;
+  couponsDiscount?: number;
 }
 //--------------------------------------------- ML order items
 type MLOrderItems = {
@@ -99,7 +101,11 @@ type Details = {
   imageUrl?: string;
 };
 
-type Totals = {};
+type Totals =  ItemTotals & {
+  unit_price?: number;
+  full_unit_price?: number;
+  discounts?: number;
+};
 
 type AdditionalInformation = { [propName: string]: any };
 
