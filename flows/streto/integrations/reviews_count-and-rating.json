@@ -1,8 +1,8 @@
 {
-  "id": "4XzB4Wm8VsDo0d0rKx4GZ",
-  "created": "1705424074775",
-  "updated": "1705424074775",
-  "name": "Reviews and Rates",
+  "id": "FxecBrlHjSL7xLnHPTFtQ",
+  "created": "1706536297156",
+  "updated": "1706536297156",
+  "name": "reviews",
   "description": "",
   "tags": [],
   "pieces": [
@@ -11,7 +11,7 @@
   ],
   "blogUrl": "",
   "template": {
-    "displayName": "Reviews and Rates",
+    "displayName": "reviews",
     "trigger": {
       "name": "trigger",
       "valid": true,
@@ -20,81 +20,44 @@
         "displayName": "Fetch Catalog Id by Name",
         "name": "step_1",
         "valid": true,
+        "type": "PIECE",
+        "settings": {
+          "packageType": "REGISTRY",
+          "pieceType": "OFFICIAL",
+          "pieceName": "@lagomus/piece-streto",
+          "pieceVersion": "1.0.5",
+          "input": {
+            "auth": "{{connections['_lagomus_piece-marcovecchio']}}",
+            "catalog_name": "mercado_libre"
+          },
+          "inputUiInfo": {},
+          "actionName": "fetch_catalog_id"
+        },
         "nextAction": {
           "displayName": "Fetch Products by Catalog Id",
           "name": "step_2",
           "valid": true,
+          "type": "PIECE",
+          "settings": {
+            "packageType": "REGISTRY",
+            "pieceType": "OFFICIAL",
+            "pieceName": "@lagomus/piece-streto",
+            "pieceVersion": "1.0.5",
+            "input": {
+              "auth": "{{connections['_lagomus_piece-marcovecchio']}}",
+              "catalog_id": "{{step_1['catalogId']}}",
+              "filter_array": [],
+              "with_stock": false,
+              "with_price": false,
+              "with_attribute_set_names": false
+            },
+            "inputUiInfo": {},
+            "actionName": "fetch_products"
+          },
           "nextAction": {
             "displayName": "Code",
             "name": "step_3",
             "valid": true,
-            "nextAction": {
-              "displayName": "Code",
-              "name": "step_7",
-              "valid": true,
-              "nextAction": {
-                "displayName": "Loop on Items",
-                "name": "step_4",
-                "valid": true,
-                "firstLoopAction": {
-                  "displayName": "Fetch Review",
-                  "name": "step_5",
-                  "valid": true,
-                  "nextAction": {
-                    "displayName": "Import reviews data",
-                    "name": "step_6",
-                    "valid": true,
-                    "type": "PIECE",
-                    "settings": {
-                      "packageType": "REGISTRY",
-                      "pieceType": "OFFICIAL",
-                      "pieceName": "@lagomus/piece-streto",
-                      "pieceVersion": "^1.0.4",
-                      "input": {
-                        "auth": "{{connections['marcovecchio']}}",
-                        "productsIds": [
-                          "{{step_3}}"
-                        ],
-                        "average_rating": "{{step_5['review']['rating_average']}}",
-                        "total_reviews": "{{step_5['review']['paging']['total']}}",
-                        "MlProductId": "{{step_4.item}}"
-                      },
-                      "inputUiInfo": {},
-                      "actionName": "import_reviews_data"
-                    }
-                  },
-                  "type": "PIECE",
-                  "settings": {
-                    "packageType": "REGISTRY",
-                    "pieceType": "OFFICIAL",
-                    "pieceName": "@lagomus/piece-mercadolibre",
-                    "pieceVersion": "^1.0.3",
-                    "input": {
-                      "auth": "{{connections['mercadolibre']}}",
-                      "productId": "{{step_4.item}}"
-                    },
-                    "inputUiInfo": {},
-                    "actionName": "fetch_review"
-                  }
-                },
-                "type": "LOOP_ON_ITEMS",
-                "settings": {
-                  "items": "{{step_7}}",
-                  "inputUiInfo": {}
-                }
-              },
-              "type": "CODE",
-              "settings": {
-                "sourceCode": {
-                  "packageJson": "\n      {\n        \"dependencies\": {\n        }\n      }",
-                  "code": "export const code = async (inputs) => {\n  return inputs.MlIds.map(e => e[1]);\n};"
-                },
-                "input": {
-                  "MlIds": "{{step_3}}"
-                },
-                "inputUiInfo": {}
-              }
-            },
             "type": "CODE",
             "settings": {
               "sourceCode": {
@@ -105,34 +68,92 @@
                 "products": "{{step_2['products']}}"
               },
               "inputUiInfo": {}
-            }
-          },
-          "type": "PIECE",
-          "settings": {
-            "packageType": "REGISTRY",
-            "pieceType": "OFFICIAL",
-            "pieceName": "@lagomus/piece-streto",
-            "pieceVersion": "^1.0.4",
-            "input": {
-              "auth": "{{connections['marcovecchio']}}",
-              "catalog_id": "{{step_1['catalogId']}}"
             },
-            "inputUiInfo": {},
-            "actionName": "fetch_products"
+            "nextAction": {
+              "displayName": "Code",
+              "name": "step_7",
+              "valid": true,
+              "type": "CODE",
+              "settings": {
+                "sourceCode": {
+                  "packageJson": "\n      {\n        \"dependencies\": {\n        }\n      }",
+                  "code": "export const code = async (inputs) => {\n  return inputs.MlIds.map(e => e[1]);\n};"
+                },
+                "input": {
+                  "MlIds": "{{step_3}}"
+                },
+                "inputUiInfo": {}
+              },
+              "nextAction": {
+                "displayName": "Loop on Items",
+                "name": "step_4",
+                "valid": true,
+                "type": "LOOP_ON_ITEMS",
+                "settings": {
+                  "items": "{{step_7}}",
+                  "inputUiInfo": {}
+                },
+                "nextAction": {
+                  "displayName": "Count reviews imported",
+                  "name": "step_8",
+                  "valid": true,
+                  "type": "PIECE",
+                  "settings": {
+                    "packageType": "REGISTRY",
+                    "pieceType": "OFFICIAL",
+                    "pieceName": "@lagomus/piece-streto",
+                    "pieceVersion": "1.0.5",
+                    "input": {
+                      "auth": "{{connections['_lagomus_piece-marcovecchio']}}"
+                    },
+                    "inputUiInfo": {},
+                    "actionName": "count_reviews_imported"
+                  }
+                },
+                "firstLoopAction": {
+                  "displayName": "Fetch Review",
+                  "name": "step_5",
+                  "valid": true,
+                  "type": "PIECE",
+                  "settings": {
+                    "packageType": "REGISTRY",
+                    "pieceType": "OFFICIAL",
+                    "pieceName": "@lagomus/piece-mercadolibre",
+                    "pieceVersion": "1.0.5",
+                    "input": {
+                      "auth": "{{connections['_lagomus_piece-mercadolibre']}}",
+                      "productId": "{{step_4.item}}"
+                    },
+                    "inputUiInfo": {},
+                    "actionName": "fetch_review"
+                  },
+                  "nextAction": {
+                    "displayName": "Import reviews data",
+                    "name": "step_6",
+                    "valid": true,
+                    "type": "PIECE",
+                    "settings": {
+                      "packageType": "REGISTRY",
+                      "pieceType": "OFFICIAL",
+                      "pieceName": "@lagomus/piece-streto",
+                      "pieceVersion": "1.0.5",
+                      "input": {
+                        "auth": "{{connections['_lagomus_piece-marcovecchio']}}",
+                        "productsIds": [
+                          "{{step_3}}"
+                        ],
+                        "average_rating": "{{step_5['review']['rating_average']}}",
+                        "total_reviews": "{{step_5['review']['paging']['total']}}",
+                        "MlProductId": "{{step_4.item}}"
+                      },
+                      "inputUiInfo": {},
+                      "actionName": "import_reviews_data"
+                    }
+                  }
+                }
+              }
+            }
           }
-        },
-        "type": "PIECE",
-        "settings": {
-          "packageType": "REGISTRY",
-          "pieceType": "OFFICIAL",
-          "pieceName": "@lagomus/piece-streto",
-          "pieceVersion": "^1.0.4",
-          "input": {
-            "auth": "{{connections['marcovecchio']}}",
-            "catalog_name": "default"
-          },
-          "inputUiInfo": {},
-          "actionName": "fetch_catalog_id"
         }
       },
       "type": "WEBHOOK",
