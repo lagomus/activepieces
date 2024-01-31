@@ -13,9 +13,6 @@ export const count_reviews_imported = createAction({
     
   },
   async run(context) {
-    console.log('successes', await context.store.get('successes', StoreScope.PROJECT));
-    console.log('fails', await context.store.get('fails', StoreScope.PROJECT))
-    
     return {
       success: await context.store.get('successes', StoreScope.PROJECT),
       fails: await context.store.get('fails', StoreScope.PROJECT),
