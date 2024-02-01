@@ -201,3 +201,15 @@ export interface ProductStretoML {
   productId: string;
   MLId: string;
 }
+
+export interface Resource {
+  _id?: string;
+  topic: string;
+  resource: string;
+  user_id?: number,
+  application_id?: number,
+  sent?: string,
+  attempts?: number,
+  received?: string,
+  actions?: string[]
+}
