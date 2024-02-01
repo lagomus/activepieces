@@ -166,7 +166,7 @@
                   "packageType": "REGISTRY",
                   "pieceType": "OFFICIAL",
                   "pieceName": "@lagomus/piece-streto",
-                  "pieceVersion": "~1.0.4",
+                  "pieceVersion": "^1.0.4",
                   "input": {
                     "auth": "{{connections['_lagomus_piece-streto']}}",
                     "catalog_id": "{{step_4['catalogId']}}",
