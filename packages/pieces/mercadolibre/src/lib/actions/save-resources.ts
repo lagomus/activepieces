@@ -29,8 +29,7 @@ export const save_resources = createAction({
   async run(context) {
     const resources = context.propsValue['resources'] as unknown as Resource;
     const topic = context.propsValue['topic'];
-    let newOrder = false;
-
+    
     if (resources.topic === topic) {
       const orderNumber = resources.resource.split('/')[2];
       const orders = await context.store.get<string[]>(

@@ -1,9 +1,10 @@
 import { createAction, Property } from '@activepieces/pieces-framework';
 import { httpClient, HttpMethod } from '@activepieces/pieces-common';
 import { meliAuth } from '../..';
+import { Cart } from '../common/models';
 
 export const fetch_order_shipment = createAction({
-  name: 'fetch_order_shipment', // Must be a unique across the piece, this shouldn't be changed.
+  name: 'fetch_order_shipment',
   auth: meliAuth,
   displayName: 'Fetch Order Shipment',
   description: 'Fetch shipment data from Mercado Libre order',
@@ -13,24 +14,43 @@ export const fetch_order_shipment = createAction({
       description: 'Identificador de órden',
       required: true,
     }),
+    pack: Property.Json({
+      displayName: 'Orders Pack',
+      description: 'Paquete de órdenes',
+      required: true,
+    }),
   },
   async run(context) {
-    const orderId = context.propsValue['orderId'];
+    const orderId = context.propsValue.orderId;
+    const pack = context.propsValue.pack as unknown as Cart;
     const token = context.auth.access_token;
 
-    let orderShipment: any = {};
-    await httpClient
-      .sendRequest<string[]>({
-        method: HttpMethod.GET,
-        headers: { Authorization: `Bearer ${token} ` },
-        url: `https://api.mercadolibre.com/orders/${orderId}/shipments`,
-      })
-      .then((r) => (orderShipment = r.status === 200 ? r : {}))
-      .catch(() => {
-        return {};
-      });
-    return {
-      orderShipment: orderShipment.body
-    };
+    if (pack && (pack.id !== null || pack.id !== undefined || pack.id !== '')) {
+      return await httpClient
+        .sendRequest<string[]>({
+          method: HttpMethod.GET,
+          headers: { Authorization: `Bearer ${token} ` },
+          url: `https://api.mercadolibre.com/shipments/${pack.shipment.id}`,
+        })
+        .then((r) => {
+          return r.body;
+        })
+        .catch(() => {
+          return {};
+        });
+    } else {
+      return await httpClient
+        .sendRequest<string[]>({
+          method: HttpMethod.GET,
+          headers: { Authorization: `Bearer ${token} ` },
+          url: `https://api.mercadolibre.com/orders/${orderId}/shipments`,
+        })
+        .then((r) => {
+          return r.body;
+        })
+        .catch(() => {
+          return {};
+        });
+    }
   },
 });
