@@ -556,3 +556,23 @@ type PriceList = {
   name?: string;
   enabled?: boolean;
 };
+
+type Cart = {
+  id: string,
+  status: string, //'filling', 'filled', 'released'
+  status_detail: string | null,
+  date_created: string,
+  last_updated: string,
+  family_pack_id: string | null,
+  buyer: Buyer,
+  shipment: Shipment,
+  orders: OrderIds[],
+}
+
+type Shipment = {
+  id: string;
+}
+
+type OrderIds = {
+  id: string;
+}

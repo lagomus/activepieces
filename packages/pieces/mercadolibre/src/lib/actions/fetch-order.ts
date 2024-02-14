@@ -1,4 +1,4 @@
-import { createAction, Property } from '@activepieces/pieces-framework';
+import { createAction, Property, StoreScope } from '@activepieces/pieces-framework';
 import { httpClient, HttpMethod } from '@activepieces/pieces-common';
 import { meliAuth } from '../..';
 import { MLOrder, OrderItem } from '../common/models';
@@ -24,6 +24,7 @@ export const fetch_order = createAction({
       headers: { Authorization: `Bearer ${token} ` },
       url: `https://api.mercadolibre.com/orders/${orderId}`,
     });
+    await context.store.put(orderId, order.body, StoreScope.FLOW);
     const skusIntermediate = order.body.order_items.map(
       (o: OrderItem) =>
         (o.item.seller_sku ?? "") || o.item.seller_custom_field?.includes('sku')
@@ -31,6 +32,7 @@ export const fetch_order = createAction({
     return {
       order: order.body,
       skus: JSON.stringify(skusIntermediate),
+      packId: order.body.pack_id
     };
   },
 });

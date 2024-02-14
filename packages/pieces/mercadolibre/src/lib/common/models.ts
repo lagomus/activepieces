@@ -4,6 +4,7 @@ export interface MLOrder {
   status_detail: any;
   date_created: string;
   date_closed: string;
+  pack_id?: string;
   order_items: OrderItem[];
   total_amount: number;
   currency_id: string;
@@ -35,9 +36,9 @@ export interface Item {
 
 export interface Buyer {
   id: string;
-  nickname: string;
-  first_name: string;
-  last_name: string;
+  nickname?: string;
+  first_name?: string;
+  last_name?: string;
 }
 
 export interface Seller {
@@ -92,6 +93,26 @@ export interface Details {}
 export interface Totals {}
 
 export interface AdditionalInformation {}
+
+export interface Cart {
+  id: string,
+  status: string, //'filling', 'filled', 'released'
+  status_detail: string | null,
+  date_created: string,
+  last_updated: string,
+  family_pack_id: string | null,
+  buyer: Buyer,
+  shipment: Shipment,
+  orders: OrderIds[],
+}
+
+export interface Shipment {
+  id: string;
+}
+
+export interface OrderIds {
+  id: string;
+}
 
 export type Product = {
   id: string;

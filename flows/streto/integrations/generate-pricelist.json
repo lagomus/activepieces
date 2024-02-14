@@ -65,7 +65,7 @@
               "actionName": "generate_pricelist",
               "inputUiInfo": {},
               "packageType": "REGISTRY",
-              "pieceVersion": "1.0.3"
+              "pieceVersion": "^1.0.3"
             },
             "nextAction": {
               "name": "step_3",
