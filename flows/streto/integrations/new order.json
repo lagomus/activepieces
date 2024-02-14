@@ -25,7 +25,7 @@
           "packageType": "REGISTRY",
           "pieceType": "OFFICIAL",
           "pieceName": "@lagomus/piece-mercadolibre",
-          "pieceVersion": "1.0.7",
+          "pieceVersion": "^1.0.7",
           "input": {
             "auth": "{{connections['_lagomus_piece-mercadolibre']}}",
             "resources": "{{trigger['body']}}",
@@ -62,7 +62,7 @@
                 "packageType": "REGISTRY",
                 "pieceType": "OFFICIAL",
                 "pieceName": "@lagomus/piece-mercadolibre",
-                "pieceVersion": "1.0.7",
+                "pieceVersion": "^1.0.7",
                 "input": {
                   "auth": "{{connections['_lagomus_piece-mercadolibre']}}",
                   "packId": "{{step_1['packId']}}"
@@ -79,7 +79,7 @@
                   "packageType": "REGISTRY",
                   "pieceType": "OFFICIAL",
                   "pieceName": "@lagomus/piece-mercadolibre",
-                  "pieceVersion": "1.0.7",
+                  "pieceVersion": "^1.0.7",
                   "input": {
                     "auth": "{{connections['_lagomus_piece-mercadolibre']}}",
                     "orderId": "{{step_2['orderId']}}",
@@ -97,7 +97,7 @@
                     "packageType": "REGISTRY",
                     "pieceType": "OFFICIAL",
                     "pieceName": "@lagomus/piece-streto",
-                    "pieceVersion": "1.0.7",
+                    "pieceVersion": "^1.0.7",
                     "input": {
                       "auth": "{{connections['_lagomus_piece-streto']}}",
                       "catalog_name": "mercado_libre"
@@ -114,7 +114,7 @@
                       "packageType": "REGISTRY",
                       "pieceType": "OFFICIAL",
                       "pieceName": "@lagomus/piece-streto",
-                      "pieceVersion": "1.0.7",
+                      "pieceVersion": "^1.0.7",
                       "input": {
                         "auth": "{{connections['_lagomus_piece-streto']}}",
                         "catalog_id": "{{step_4['catalogId']}}",
@@ -150,7 +150,7 @@
                           "packageType": "REGISTRY",
                           "pieceType": "OFFICIAL",
                           "pieceName": "@lagomus/piece-streto",
-                          "pieceVersion": "1.0.7",
+                          "pieceVersion": "^1.0.7",
                           "input": {
                             "auth": "{{connections['_lagomus_piece-streto']}}",
                             "filter_codes": [
@@ -184,7 +184,7 @@
                               "packageType": "REGISTRY",
                               "pieceType": "OFFICIAL",
                               "pieceName": "@lagomus/piece-streto",
-                              "pieceVersion": "1.0.7",
+                              "pieceVersion": "^1.0.7",
                               "input": {
                                 "auth": "{{connections['_lagomus_piece-streto']}}",
                                 "order": "{{step_1['order']}}",
@@ -211,7 +211,7 @@
               "packageType": "REGISTRY",
               "pieceType": "OFFICIAL",
               "pieceName": "@lagomus/piece-mercadolibre",
-              "pieceVersion": "1.0.7",
+              "pieceVersion": "^1.0.7",
               "input": {
                 "auth": "{{connections['_lagomus_piece-mercadolibre']}}",
                 "orderId": "2000007538714562"
