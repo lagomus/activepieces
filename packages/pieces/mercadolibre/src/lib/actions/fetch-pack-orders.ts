@@ -23,7 +23,7 @@ export const fetch_pack_orders = createAction({
     const packId = context.propsValue.packId;
     const token = context.auth.access_token;
 
-    if (packId !== null) {
+    if (packId !== '') {
       let cartOrders = await httpClient.sendRequest<Cart>({
         method: HttpMethod.GET,
         headers: { Authorization: `Bearer ${token} ` },
@@ -49,12 +49,12 @@ export const fetch_pack_orders = createAction({
             url: `https://api.mercadolibre.com/orders/${o.id}`,
           });
           const orderId = order.body.id as unknown as string;
-          await context.store.put(orderId, order.body, StoreScope.FLOW);
+          await context.store.put(`${orderId}`, order.body, StoreScope.FLOW);
         });
-
+        await context.store.delete('newPack', StoreScope.PROJECT);
+        await context.store.put('newPack', packId, StoreScope.PROJECT);
         return {
           cartOrders: cartOrders.body,
-          newPacks,
         };
       } else {
         if (packs === null) {
@@ -72,20 +72,24 @@ export const fetch_pack_orders = createAction({
               url: `https://api.mercadolibre.com/orders/${o.id}`,
             });
             const orderId = order.body.id as unknown as string;
-            await context.store.put(orderId, order.body, StoreScope.FLOW);
+            await context.store.put(`${orderId}`, order.body, StoreScope.FLOW);
           });
+          await context.store.delete('newPack', StoreScope.PROJECT);
+          await context.store.put('newPack', '', StoreScope.PROJECT);
+        } else {
+          await context.store.delete('newPack', StoreScope.PROJECT);
+          await context.store.put('newPack', '', StoreScope.PROJECT);
         }
         return {
-          //pack already processed
           cartOrders: cartOrders.body,
-          newPacks: await context.store.get(
-            'packsProcessed',
-            StoreScope.PROJECT
-          ),
         };
       }
     } else {
-      return { cartOrders: null }; // puedo tener el riesgo de q una orden de un pack la procese como orden individual, REVISAR
+      //pack already processed
+
+      await context.store.delete('newPack', StoreScope.PROJECT);
+      await context.store.put('newPack', '', StoreScope.PROJECT);
+      return { cartOrders: null };
     }
   },
 });

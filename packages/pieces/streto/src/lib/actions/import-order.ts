@@ -31,10 +31,12 @@ const getOrderItems = (
   pack: Cart
 ): Promise<OrderItem[]>[] => {
   if (pack && pack.id !== '') {
-    return pack.orders.map((p) => {
-      return context.store.get(p.id, StoreScope.FLOW).then((r) => {
-        return (r as Order).order_items;
-      });
+    return pack.orders?.map(async (p) => {
+      return await context.store
+        .get(p.id.toString(), StoreScope.FLOW)
+        .then((r) => {
+          return (r as Order).order_items;
+        });
     });
   } else {
     return [
@@ -167,20 +169,33 @@ const getTotal = (order_items: MLOrderItems[]) => {
 
 const getOrderMapping = (
   order: Order,
+  pack: Cart,
   orderItems: MLOrderItems[],
   shippingAddress: Address,
   billingAddress: Address,
   shipping: MLShipping,
-  shipping_items: StretoShippingMethodItem[]
+  shipping_items: StretoShippingMethodItem[],
+  orderProducts: OrderItem[]
 ) => {
+  const externalId =
+    order?.id !== undefined && order?.pack_id
+      ? order?.pack_id.toString()
+      : order?.id !== undefined
+      ? order?.id?.toString()
+      : pack.id;
+  const orderNumber =
+    order?.id !== undefined && order?.pack_id
+      ? order?.pack_id.toString()
+      : order?.id !== undefined
+      ? order?.id?.toString()
+      : pack.id;
   return {
-    externalId: order?.pack_id
-      ? order?.pack_id.toString()
-      : order?.id?.toString(),
-    orderNumber: order?.pack_id
-      ? order?.pack_id.toString()
-      : order?.id?.toString(),
-    currencyCode: order.currency_id,
+    externalId: externalId.toString(),
+    orderNumber: orderNumber.toString(),
+    currencyCode:
+      order?.id !== undefined
+        ? order.currency_id
+        : orderProducts[0].currency_id.toString(),
     items: orderItems,
     state: getOrderState(order.status),
     shippingAddresses:
@@ -259,7 +274,8 @@ const getOrderMapping = (
     ],
     history: [
       {
-        createdAt: order.date_created,
+        createdAt:
+          order?.id !== undefined ? order.date_created : pack.date_created,
         title: 'Order created',
         stateFrom: null,
         stateTo: getOrderState(order.status),
@@ -278,7 +294,7 @@ const getOrderMapping = (
       discount: order.coupon?.amount || 0,
       grandTotal:
         getTotal(orderItems) +
-        order.taxes?.amount +
+        order.taxes?.amount ?? 0 +
         (shipping.base_cost
           ? shipping.base_cost
           : shipping.shipping_option?.cost),
@@ -300,27 +316,30 @@ export const import_order = createAction({
   props: {
     order: Property.Json({
       displayName: 'Order',
-      description: 'Mercado Libre Order',
+      description: 'Input: fetch order orders. Mercado Libre Order',
       required: true,
     }),
     pack: Property.Json({
       displayName: 'Pack',
-      description: 'Pack order from ML, contains multiple items in a package',
+      description:
+        'Input: fetch pack orders cartOrders. Pack order from ML, contains multiple items in a package',
       required: true,
     }),
     orderShipment: Property.Json({
       displayName: 'Order Shipment',
-      description: 'Mercado Libre Order Shipment',
+      description: 'Input: Fetch Order Shipment. Mercado Libre Order Shipment',
       required: true,
     }),
     stretoOrderItems: Property.Array({
       displayName: 'Streto Order Items',
-      description: 'Streto products matching Mercado Libre order items',
+      description:
+        'Input: Fetch products. Streto products matching Mercado Libre order items',
       required: true,
     }),
     cdn_url: Property.ShortText({
       displayName: 'CDN url',
-      description: 'Streto Content Delivery Network url',
+      description:
+        'Input: Code after fetch settings. Streto Content Delivery Network url',
       required: false,
       defaultValue: '',
     }),
@@ -338,42 +357,67 @@ export const import_order = createAction({
     const pack = context.propsValue.pack as Cart;
     const order_items = getOrderItems(context, order, pack);
 
-    return Promise.all(order_items).then(async (r) => {
-      const orderProducts: OrderItem[] = [];
-      r.map((e) => e.map((t) => orderProducts.push(t)));
-      const orderItems: MLOrderItems[] = [];
-      let shipping_items: StretoShippingMethodItem[] = [];
-      if (orderProducts.length > 0) {
-        mappingProducts(
-          orderProducts,
-          stretoProducts,
+    const processedOrders = (await context.store.get(
+      'orders',
+      StoreScope.PROJECT
+    )) as string[];
+    const orderId = order.id !== undefined ? order.id.toString() : '';
+    const newPack = (await context.store.get(
+      'newPack',
+      StoreScope.PROJECT
+    )) as string;
+
+    if (
+      (orderId !== '' && !processedOrders.includes(orderId)) ||
+      newPack !== ''
+    ) {
+      return Promise.all(order_items).then(async (r) => {
+        const orderProducts: OrderItem[] = [];
+        r.map((e) => e.map((t) => orderProducts.push(t)));
+        const orderItems: MLOrderItems[] = [];
+        let shipping_items: StretoShippingMethodItem[] = [];
+        if (orderProducts.length > 0) {
+          mappingProducts(
+            orderProducts,
+            stretoProducts,
+            shipping_items,
+            cdnUrl,
+            orderItems
+          );
+        }
+
+        let shippingAddress: Address = shipping
+          ? shipping?.receiver_address
+          : {};
+        let billingAddress: Address = shipping
+          ? shipping?.receiver_address
+          : {};
+        const url = `${context.auth.baseUrl}/app/orders/import`;
+
+        let mapping = getOrderMapping(
+          order,
+          pack,
+          orderItems,
+          shippingAddress,
+          billingAddress,
+          shipping,
           shipping_items,
-          cdnUrl,
-          orderItems
+          orderProducts
         );
-      }
 
-      let shippingAddress: Address = shipping ? shipping?.receiver_address : {};
-      let billingAddress: Address = shipping ? shipping?.receiver_address : {};
-      const url = `${context.auth.baseUrl}/app/orders/import`;
-
-      let mapping = getOrderMapping(
-        order,
-        orderItems,
-        shippingAddress,
-        billingAddress,
-        shipping,
-        shipping_items
-      );
-
-      return await httpClient.sendRequest<StretoOrder>({
-        method: HttpMethod.POST,
-        headers: {
-          'x-api-key': context.auth.apiKey,
-        },
-        url,
-        body: { ...mapping },
+        return await httpClient.sendRequest<StretoOrder>({
+          method: HttpMethod.POST,
+          headers: {
+            'x-api-key': context.auth.apiKey,
+          },
+          url,
+          body: { ...mapping },
+        });
       });
-    });
+    } else {
+      return {
+        imported: 'order already processed',
+      };
+    }
   },
 });
