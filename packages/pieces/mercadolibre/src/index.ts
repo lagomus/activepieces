@@ -4,16 +4,19 @@ import { fetch_order_shipment } from './lib/actions/fetch-order-shipping';
 import { fetch_categories } from './lib/actions/fetch-categories';
 import { fetch_attributes } from './lib/actions/fetch-attributes';
 import { publish_products } from './lib/actions/publish-products';
-import { fetch_review } from "./lib/actions/fetch-review";
+import { fetch_review } from './lib/actions/fetch-review';
 import { save_resources } from './lib/actions/save-resources';
 import { fetch_pack_orders } from './lib/actions/fetch-pack-orders';
 
-export const meliAuth = PieceAuth.OAuth2({
-  description: '',
-  authUrl: 'https://auth.mercadolibre.com.ar/authorization',
-  tokenUrl: 'https://api.mercadolibre.com/oauth/token',
+export const meliAuth = PieceAuth.CustomAuth({
   required: true,
-  scope: ['read', 'write'],
+  props: {
+    access_token: PieceAuth.SecretText({
+      displayName: 'Access Token',
+      description: 'The access token for Mercadolibre integration',
+      required: true,
+    }),
+  },
 });
 
 export const mercadolibre = createPiece({
@@ -31,7 +34,7 @@ export const mercadolibre = createPiece({
     publish_products,
     fetch_review,
     save_resources,
-    fetch_pack_orders
+    fetch_pack_orders,
   ],
   triggers: [],
 });
