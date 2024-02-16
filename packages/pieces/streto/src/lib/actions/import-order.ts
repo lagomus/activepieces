@@ -12,6 +12,7 @@ import {
 import { httpClient, HttpMethod } from '@activepieces/pieces-common';
 import { stretoAuth } from '../..';
 import { randomUUID } from 'crypto';
+import { isEmpty } from '@activepieces/shared';
 
 const getOrderItems = (
   context: ActionContext<
@@ -140,19 +141,19 @@ const getShowItems = (orderItems: MLOrderItems[]) => {
       };
       item.id = o?.id;
       item.productId = o.productId;
-      item.qty = o.qtyOrdered;
-      item.isAvailable = true;
+      item.qty = o.productId !== null ? o.qtyOrdered : undefined;
+      item.isAvailable = o.productId !== null;
       item.details = { ...o.details };
       item.totals = {
-        unit: o.totals.unit || 0,
-        unitDiscount: o.totals.unitDiscount || 0,
-        subtotal: o.totals.subtotal || 0,
-        discount: o.totals.discount || 0,
-        tax: o.taxes || 0,
-        grandTotal: o.totals?.unit_price || 0 * o.qtyOrdered,
-        couponsDiscount: 0,
+        unit: o.productId !== null ? o.totals.unit || 0 : 0,
+        unitDiscount: o.productId !== null ? o.totals.unitDiscount || 0 : 0,
+        subtotal: o.productId !== null ? o.totals.subtotal || 0 : 0,
+        discount: o.productId !== null ? o.totals.discount || 0 : 0,
+        tax: o.productId !== null ? o.taxes || 0 : 0,
+        grandTotal: o.productId !== null ? o.totals?.unit_price || 0 * o.qtyOrdered : 0,
+        couponsDiscount: o.productId !== null ? 0 : 0,
       };
-      item.variantOptions = o.variantOptions;
+      item.variantOptions = o.productId !== null ? o.variantOptions : {};
       return items.push(item);
     });
     return items;
@@ -293,11 +294,11 @@ const getOrderMapping = (
       globalDiscount: 0,
       discount: order.coupon?.amount || 0,
       grandTotal:
-        getTotal(orderItems) +
-        order.taxes?.amount ?? 0 +
-        (shipping.base_cost
-          ? shipping.base_cost
-          : shipping.shipping_option?.cost),
+        getTotal(orderItems) + order.taxes?.amount ??
+        0 +
+          (shipping.base_cost
+            ? shipping.base_cost
+            : shipping.shipping_option?.cost),
     },
     additionalInformation: {
       origin: 'Mercado Libre',
@@ -316,7 +317,7 @@ export const import_order = createAction({
   props: {
     order: Property.Json({
       displayName: 'Order',
-      description: 'Input: fetch order orders. Mercado Libre Order',
+      description: 'Input: fetch order, order. Mercado Libre Order',
       required: true,
     }),
     pack: Property.Json({
@@ -333,7 +334,7 @@ export const import_order = createAction({
     stretoOrderItems: Property.Array({
       displayName: 'Streto Order Items',
       description:
-        'Input: Fetch products. Streto products matching Mercado Libre order items',
+        'Input: Fetch products products. Streto products matching Mercado Libre order items',
       required: true,
     }),
     cdn_url: Property.ShortText({
@@ -358,7 +359,7 @@ export const import_order = createAction({
     const order_items = getOrderItems(context, order, pack);
 
     const processedOrders = (await context.store.get(
-      'orders',
+      'ordersProcessed',
       StoreScope.PROJECT
     )) as string[];
     const orderId = order.id !== undefined ? order.id.toString() : '';
@@ -366,9 +367,8 @@ export const import_order = createAction({
       'newPack',
       StoreScope.PROJECT
     )) as string;
-
     if (
-      (orderId !== '' && !processedOrders.includes(orderId)) ||
+      (orderId !== '' && !processedOrders?.includes(orderId)) ||
       newPack !== ''
     ) {
       return Promise.all(order_items).then(async (r) => {
@@ -405,14 +405,47 @@ export const import_order = createAction({
           orderProducts
         );
 
-        return await httpClient.sendRequest<StretoOrder>({
-          method: HttpMethod.POST,
-          headers: {
-            'x-api-key': context.auth.apiKey,
-          },
-          url,
-          body: { ...mapping },
-        });
+        await httpClient
+          .sendRequest<StretoOrder>({
+            method: HttpMethod.POST,
+            headers: {
+              'x-api-key': context.auth.apiKey,
+            },
+            url,
+            body: { ...mapping },
+          })
+          .then(async (res) => {
+            if (res.status === 200 || res.status === 204) {
+              const orders = await context.store.get<string[]>(
+                'ordersProcessed',
+                StoreScope.PROJECT
+              );
+              if (orders !== null && !isEmpty(orders)) {
+                let newOrders: string[] = orders;
+                if (!orders.includes(res.body.orderNumber.toString())) {
+                  newOrders.push(res.body.orderNumber.toString());
+                  await context.store.delete(
+                    'ordersProcessed',
+                    StoreScope.PROJECT
+                  );
+                  await context.store.put(
+                    'ordersProcessed',
+                    newOrders,
+                    StoreScope.PROJECT
+                  );
+                  return res.body;
+                }
+              } else {
+                await context.store.put(
+                  'ordersProcessed',
+                  [res.body.orderNumber.toString()],
+                  StoreScope.PROJECT
+                );
+                return res.body;
+              }
+            }
+            return res.body;
+          });
       });
     } else {
       return {

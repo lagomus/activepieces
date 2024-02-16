@@ -11,12 +11,12 @@ export const fetch_order_shipment = createAction({
   props: {
     orderId: Property.ShortText({
       displayName: 'Order Id',
-      description: 'Identificador de órden',
+      description: 'Input: Fetch order order id. Identificador de órden',
       required: true,
     }),
     pack: Property.Json({
       displayName: 'Orders Pack',
-      description: 'Paquete de órdenes',
+      description: 'Input: Fetch pack orders cartOrders. Paquete de órdenes',
       required: true,
     }),
   },

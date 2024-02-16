@@ -24,39 +24,47 @@ export const fetch_order = createAction({
     const orderId = context.propsValue.orderId;
     const token = context.auth.access_token;
 
-    return httpClient
-      .sendRequest<MLOrder>({
-        method: HttpMethod.GET,
-        headers: { Authorization: `Bearer ${token} ` },
-        url: `https://api.mercadolibre.com/orders/${orderId}`,
-      })
-      .then(async (res) => {
-        if (res.status === 200) {
-          await context.store.put(orderId, res.body, StoreScope.FLOW);
-          const skusIntermediate = res.body.order_items.map(
-            (o: OrderItem) =>
-              (o.item.seller_sku ?? '') ||
-              o.item.seller_custom_field?.includes('sku')
-          );
-          return {
-            order: res.body,
-            skus: JSON.stringify(skusIntermediate),
-            packId: res.body.pack_id ? res.body.pack_id : '',
-          };
-        } else {
+    if (orderId !== '') {
+      return httpClient
+        .sendRequest<MLOrder>({
+          method: HttpMethod.GET,
+          headers: { Authorization: `Bearer ${token} ` },
+          url: `https://api.mercadolibre.com/orders/${orderId}`,
+        })
+        .then(async (res) => {
+          if (res.status === 200) {
+            await context.store.put(orderId, res.body, StoreScope.FLOW);
+            const skusIntermediate = res.body.order_items.map(
+              (o: OrderItem) =>
+                (o.item.seller_sku ?? '') ||
+                o.item.seller_custom_field?.includes('sku')
+            );
+            return {
+              order: res.body,
+              skus: JSON.stringify(skusIntermediate),
+              packId: res.body.pack_id ? res.body.pack_id : '',
+            };
+          } else {
+            return {
+              order: '',
+              skus: '',
+              packId: orderId,
+            };
+          }
+        })
+        .catch(() => {
           return {
             order: '',
             skus: '',
             packId: orderId,
           };
-        }
-      })
-      .catch(() => {
-        return {
-          order: '',
-          skus: '',
-          packId: orderId,
-        };
-      });
+        });
+    } else {
+      return { //es una orden y ya estaba procesada
+        order: '',
+        skus: '',
+        packId: '',
+      };
+    }
   },
 });
