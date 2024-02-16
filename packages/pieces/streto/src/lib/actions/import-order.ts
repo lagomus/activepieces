@@ -143,7 +143,7 @@ const getShowItems = (orderItems: MLOrderItems[]) => {
       item.productId = o.productId;
       item.qty = o.productId !== null ? o.qtyOrdered : undefined;
       item.isAvailable = o.productId !== null;
-      item.details = { ...o.details };
+      item.details = o.productId !== null ? { ...o.details } : {};
       item.totals = {
         unit: o.productId !== null ? o.totals.unit || 0 : 0,
         unitDiscount: o.productId !== null ? o.totals.unitDiscount || 0 : 0,
