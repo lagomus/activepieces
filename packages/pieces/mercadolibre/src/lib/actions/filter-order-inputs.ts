@@ -7,11 +7,11 @@ import { meliAuth } from '../..';
 import { Resource } from '../common/models';
 import { isEmpty } from '@activepieces/shared';
 
-export const save_resources = createAction({
-  name: 'save resources',
+export const filter_order_inputs = createAction({
+  name: 'filter order inputs',
   auth: meliAuth,
-  displayName: 'Save resources',
-  description: 'Save resources from ML webhook request body in database',
+  displayName: 'Filter order inputs',
+  description: 'Filter topic and filter if not processed order number',
   props: {
     resources: Property.Json({
       displayName: 'Resources',
@@ -27,29 +27,35 @@ export const save_resources = createAction({
     }),
   },
   async run(context) {
-    const resources = context.propsValue['resources'] as unknown as Resource;
-    const topic = context.propsValue['topic'];
-    
+    const resources = context.propsValue.resources as unknown as Resource;
+    const topic = context.propsValue.topic;
+
     if (resources.topic === topic) {
       const orderNumber = resources.resource.split('/')[2];
       const orders = await context.store.get<string[]>(
-        'orders',
+        'ordersProcessed',
         StoreScope.PROJECT
       );
       if (orders !== null && !isEmpty(orders)) {
-        let newOrders: string[] = orders;
         if (!orders.includes(orderNumber)) {
-          newOrders.push(orderNumber);
+          return {
+            topic: topic,
+            newOrder: orderNumber,
+          };
+        } else {
+          return { newOrder: '' };
         }
-        await context.store.delete('orders', StoreScope.PROJECT);
-        await context.store.put('orders', newOrders, StoreScope.PROJECT);
       } else {
-        await context.store.put('orders', [orderNumber], StoreScope.PROJECT);
+        return {
+          topic: topic,
+          newOrder: orderNumber,
+        };
       }
+    } else {
+      return {
+        topic: 'not expected topic',
+        newOrder: '',
+      };
     }
-    return {
-      topic: topic,
-      orders: await context.store.get('orders', StoreScope.PROJECT),
-    };
   },
 });

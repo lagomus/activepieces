@@ -15,7 +15,7 @@ export const fetch_pack_orders = createAction({
   props: {
     packId: Property.ShortText({
       displayName: 'Pack id',
-      description: 'Identificador de paquete de órdenes',
+      description: 'Input: Fetch Order packId. Identificador de paquete de órdenes',
       required: true,
     }),
   },

@@ -5,7 +5,7 @@ import { fetch_categories } from './lib/actions/fetch-categories';
 import { fetch_attributes } from './lib/actions/fetch-attributes';
 import { publish_products } from './lib/actions/publish-products';
 import { fetch_review } from './lib/actions/fetch-review';
-import { save_resources } from './lib/actions/save-resources';
+import { filter_order_inputs } from './lib/actions/filter-order-inputs';
 import { fetch_pack_orders } from './lib/actions/fetch-pack-orders';
 
 export const meliAuth = PieceAuth.CustomAuth({
@@ -33,7 +33,7 @@ export const mercadolibre = createPiece({
     fetch_attributes,
     publish_products,
     fetch_review,
-    save_resources,
+    filter_order_inputs,
     fetch_pack_orders,
   ],
   triggers: [],
