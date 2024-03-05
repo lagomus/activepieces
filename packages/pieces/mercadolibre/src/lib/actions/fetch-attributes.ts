@@ -5,7 +5,7 @@ import {
 } from '@activepieces/pieces-framework';
 import { httpClient, HttpMethod } from '@activepieces/pieces-common';
 import { meliAuth } from '../..';
-import { Attribute, Category } from '../common/models';
+import { MeliAttribute, Category } from '../common/models';
 
 export const fetch_attributes = createAction({
   name: 'fetch_attributes',
@@ -23,7 +23,7 @@ export const fetch_attributes = createAction({
     const category: Category = context.propsValue['category'] as Category;
     const token = context.auth.access_token;
 
-    const attrs = await httpClient.sendRequest<Attribute[]>({
+    const attrs = await httpClient.sendRequest<MeliAttribute[]>({
       method: HttpMethod.GET,
       headers: { Authorization: `Bearer ${token}` },
       url: `https://api.mercadolibre.com/categories/${category.id}/attributes`,
@@ -99,7 +99,7 @@ function removeAccents(text?: string) {
     : '';
 }
 
-function getAttrOptions(item: Attribute) {
+function getAttrOptions(item: MeliAttribute) {
   if (item.values) {
     return item.values
       .map((v) => removeAccents(`${v.name} (${v.id})`))
@@ -108,7 +108,7 @@ function getAttrOptions(item: Attribute) {
   return undefined;
 }
 
-function getAttrName(item: Attribute) {
+function getAttrName(item: MeliAttribute) {
   if (item.allowed_units) {
     return removeAccents(`${item.name} (${item.default_unit})`);
   }

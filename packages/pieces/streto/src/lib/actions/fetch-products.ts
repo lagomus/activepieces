@@ -13,16 +13,11 @@ export const fetch_products = createAction({
       description: undefined,
       required: true,
     }),
-    filter_attribute: Property.ShortText({
-      displayName: 'Attribute filter',
-      description: 'Use to pass attribute to filter by',
-      required: false,
-    }),
     filter_array: Property.Array({
       displayName: 'Array filter',
       description: 'Use to pass an array of elements to filter by',
       required: false,
-      defaultValue: []
+      defaultValue: [],
     }),
     with_stock: Property.Checkbox({
       displayName: 'With Stock',
@@ -32,6 +27,11 @@ export const fetch_products = createAction({
     with_price: Property.Checkbox({
       displayName: 'With Price',
       description: 'Fetch product price',
+      required: false,
+    }),
+    with_children: Property.Checkbox({
+      displayName: 'With Children',
+      description: 'Fetch product children',
       required: false,
     }),
     with_attribute_set_names: Property.Checkbox({
@@ -58,13 +58,12 @@ export const fetch_products = createAction({
   async run(context) {
     const catalogId = context.propsValue['catalog_id'];
     const filterArray = context.propsValue['filter_array'];
-    const filterAttribute = context.propsValue['filter_attribute']; //problemas en el where por template string. Por eso no se usa.
     const skip = context.propsValue['skip'];
     const limit = context.propsValue['limit'];
 
     const filter = {
-      ...(filterArray && filterArray?.length > 0 &&
-        {
+      ...(filterArray &&
+        filterArray?.length > 0 && {
           where: {
             and: [
               { 'attributes.sku': { inq: JSON.parse(`${filterArray}`) } },
@@ -72,10 +71,9 @@ export const fetch_products = createAction({
             ],
           },
         }),
-      ...(!filterArray &&
-        !filterAttribute && {
-          where: { type: { neq: 'variant' } },
-        }),
+      ...(!filterArray && {
+        where: { type: { neq: 'variant' } },
+      }),
       ...(skip !== undefined &&
         limit !== undefined && {
           skip: skip,
@@ -93,6 +91,76 @@ export const fetch_products = createAction({
       }/app/catalogs/${catalogId}/products?filter=${JSON.stringify(filter)}`,
     });
     let products: Product[] = response.body;
+
+    if (context.propsValue['with_children']) {
+      const productIds = products
+        .filter((p: Product) => p.type === 'configurable')
+        .map((p: Product) => p.id);
+
+      const productVariants: Product[] = [];
+
+      for (const id of productIds) {
+        let children = (
+          await httpClient.sendRequest<Product[]>({
+            method: HttpMethod.GET,
+            headers: {
+              'x-api-key': context.auth.apiKey,
+            },
+            url: `${context.auth.baseUrl}/app/products/${id}/children`,
+          })
+        ).body;
+
+        if (context.propsValue['with_stock']) {
+          const childrenStockItems = await httpClient.sendRequest<StockItem[]>({
+            method: HttpMethod.GET,
+            headers: {
+              'x-api-key': context.auth.apiKey,
+            },
+            url: `${
+              context.auth.baseUrl
+            }/app/products/${id}/children/stock-items?filter=${JSON.stringify({
+              offset: 0,
+              limit: 1000,
+            })}`,
+          });
+          children = children.map((p) => {
+            const stock = childrenStockItems.body.find(
+              (item) => item.productId === p.id
+            );
+            return { ...p, qty: stock?.qty };
+          });
+        }
+
+        if (context.propsValue['with_price']) {
+          const childrenPrices = await httpClient.sendRequest<Price[]>({
+            method: HttpMethod.GET,
+            headers: {
+              'x-api-key': context.auth.apiKey,
+            },
+            url: `${
+              context.auth.baseUrl
+            }/app/prices?filter={"where":{"productId":{"inq":${JSON.stringify(
+              children.map((c) => c.id)
+            )}}}}`,
+          });
+
+          children = children.map((p) => {
+            const price = childrenPrices.body.find(
+              (item) => item.productId === p.id
+            );
+            return { ...p, price: price?.value };
+          });
+        }
+        productVariants.push(...children.filter((c) => c?.price !== undefined));
+      }
+
+      products = products.map((p) => {
+        const variants = productVariants.filter(
+          (v: any) => v.attributes.parentId === p.id
+        );
+        return p.type === 'simple' ? p : { ...p, variants: variants };
+      });
+    }
 
     if (context.propsValue['with_stock']) {
       const productIds = products.map((p: Product) => p.id);

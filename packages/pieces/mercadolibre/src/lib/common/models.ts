@@ -32,6 +32,9 @@ export interface Item {
   seller_sku?: string;
   seller_custom_field?: any[];
   sold_quantity?: number;
+  pictures?: any[];
+  picture_ids?: any[];
+  variations?: any[];
 }
 
 export interface Buyer {
@@ -95,15 +98,15 @@ export interface Totals {}
 export interface AdditionalInformation {}
 
 export interface Cart {
-  id: string,
-  status: string, //'filling', 'filled', 'released'
-  status_detail: string | null,
-  date_created: string,
-  last_updated: string,
-  family_pack_id: string | null,
-  buyer: Buyer,
-  shipment: Shipment,
-  orders: OrderIds[],
+  id: string;
+  status: string; //'filling', 'filled', 'released'
+  status_detail: string | null;
+  date_created: string;
+  last_updated: string;
+  family_pack_id: string | null;
+  buyer: Buyer;
+  shipment: Shipment;
+  orders: OrderIds[];
 }
 
 export interface Shipment {
@@ -119,24 +122,28 @@ export type Product = {
   type?: string;
   qty?: number;
   price?: number;
-  attributes: Attributes;
+  attributes: StretoAttribute;
   scopedAttributes?: ScopedAttributes;
   attributeSets?: string[];
   attributeSetName?: string;
+  variants?: Product[];
 };
 
-type Attributes = {
+export type StretoAttribute = {
   name?: string;
+  title?: string;
   sku: string;
   brand?: string;
   urlKey?: string;
-  mvb_cost: string;
-  mvb_source_rule: string;
+  mvb_cost?: string;
+  mvb_source_rule?: string;
   enabled?: boolean;
   images?: Image[];
   item_condition?: string;
   model?: string;
   description?: string;
+  variantOptions?: any;
+  validations?: any;
   [propName: string]: any;
 };
 
@@ -157,7 +164,7 @@ export type Category = {
   }[];
 };
 
-export type Attribute = {
+export type MeliAttribute = {
   id: string;
   name?: string;
   value_type?: string;
@@ -171,6 +178,9 @@ export type Attribute = {
     name: string;
   }[];
   default_unit?: string;
+  tags: {
+    allow_variations?: boolean;
+  };
 };
 
 export type AttributeSet = {
@@ -227,10 +237,10 @@ export interface Resource {
   _id?: string;
   topic: string;
   resource: string;
-  user_id?: number,
-  application_id?: number,
-  sent?: string,
-  attempts?: number,
-  received?: string,
-  actions?: string[]
+  user_id?: number;
+  application_id?: number;
+  sent?: string;
+  attempts?: number;
+  received?: string;
+  actions?: string[];
 }
