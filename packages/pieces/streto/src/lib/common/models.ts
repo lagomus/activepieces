@@ -7,9 +7,12 @@ type Catalog = {
 type Product = {
   id: string;
   type?: string;
-  attributes: Attributes;
+  attributes: Attribute;
   scopedAttributes?: ScopedAttributes;
   attributeSets?: string[];
+  price?: number;
+  qty?: number;
+  variants?: Product[];
 };
 
 type Rule = {
@@ -25,12 +28,12 @@ type Rule = {
   };
 };
 
-type Attributes = {
+type Attribute = {
   name?: string;
   sku: string;
   urlKey?: string;
-  mvb_cost: string;
-  mvb_source_rule: string;
+  mvb_cost?: string;
+  mvb_source_rule?: string;
   enabled?: boolean;
   images?: Image[];
   [propName: string]: any;
@@ -64,7 +67,7 @@ type ShowItems = {
   variantOptions?: Record<string, unknown>;
   customOptions?: Record<string, unknown>;
   additionalInformation?: Record<string, unknown>;
-}
+};
 
 type ItemTotals = {
   unit?: number;
@@ -74,7 +77,7 @@ type ItemTotals = {
   tax?: Tax;
   grandTotal?: number;
   couponsDiscount?: number;
-}
+};
 //--------------------------------------------- ML order items
 type MLOrderItems = {
   id?: string;
@@ -101,7 +104,7 @@ type Details = {
   imageUrl?: string;
 };
 
-type Totals =  ItemTotals & {
+type Totals = ItemTotals & {
   unit_price?: number;
   full_unit_price?: number;
   discounts?: number;
@@ -558,21 +561,21 @@ type PriceList = {
 };
 
 type Cart = {
-  id: string,
-  status: string, //'filling', 'filled', 'released'
-  status_detail: string | null,
-  date_created: string,
-  last_updated: string,
-  family_pack_id: string | null,
-  buyer: Buyer,
-  shipment: Shipment,
-  orders: OrderIds[],
-}
+  id: string;
+  status: string; //'filling', 'filled', 'released'
+  status_detail: string | null;
+  date_created: string;
+  last_updated: string;
+  family_pack_id: string | null;
+  buyer: Buyer;
+  shipment: Shipment;
+  orders: OrderIds[];
+};
 
 type Shipment = {
   id: string;
-}
+};
 
 type OrderIds = {
   id: string;
-}
+};
