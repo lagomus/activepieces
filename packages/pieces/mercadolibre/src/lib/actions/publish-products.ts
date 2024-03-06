@@ -28,6 +28,31 @@ export const publish_products = createAction({
       description: 'CDN Base URL',
       required: true,
     }),
+    attributesField: Property.ShortText({
+      displayName: 'Attributes field name',
+      description:
+        'Specify the storage field name where Streto attributes were stored in the previous step',
+      required: true,
+    }),
+    attributesScope: Property.StaticDropdown({
+      displayName: 'Attributes scope',
+      description:
+        'Specify the storage scope where Streto attributes were stored in the previous step',
+      required: true,
+      options: {
+        options: [
+          {
+            label: 'Project',
+            value: StoreScope.PROJECT,
+          },
+          {
+            label: 'Flow',
+            value: StoreScope.FLOW,
+          },
+        ],
+      },
+      defaultValue: StoreScope.FLOW,
+    }),
   },
   async run(context) {
     const item = context.propsValue['product'] as Product;
@@ -36,9 +61,9 @@ export const publish_products = createAction({
 
     const streto_attributes =
       (await context.store.get<StretoAttribute[]>(
-        'ATTRIBUTES_LIST',
-        StoreScope.FLOW
-      )) || [];
+        context.propsValue['attributesField'],
+        context.propsValue['attributesScope']
+      )) ?? [];
 
     // check wether the product is already published
     const sku = item.attributes['sku'];
