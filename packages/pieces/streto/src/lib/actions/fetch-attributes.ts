@@ -8,7 +8,7 @@ export const fetch_attributes = createAction({
   displayName: 'Fetch Attributes',
   description: 'Fetch Attributes and optionally keep the result in local DB',
   props: {
-    sytem: Property.Checkbox({
+    system: Property.Checkbox({
       displayName: 'Include system attributes',
       description: 'Include system attributes',
       required: false,
@@ -22,7 +22,7 @@ export const fetch_attributes = createAction({
         'x-api-key': context.auth.apiKey,
       },
       url: `${context.auth.baseUrl}/app/attributes?filter=${JSON.stringify({
-        where: { system: context.propsValue['sytem'] },
+        where: { system: context.propsValue['system'] },
       })}`,
     });
 
