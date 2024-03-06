@@ -28,30 +28,11 @@ export const publish_products = createAction({
       description: 'CDN Base URL',
       required: true,
     }),
-    attributesField: Property.ShortText({
-      displayName: 'Attributes field name',
-      description:
-        'Specify the storage field name where Streto attributes were stored in the previous step',
+    streto_attributes: Property.LongText({
+      displayName: 'Streto attributes',
+      description: '',
       required: true,
-    }),
-    attributesScope: Property.StaticDropdown({
-      displayName: 'Attributes scope',
-      description:
-        'Specify the storage scope where Streto attributes were stored in the previous step',
-      required: true,
-      options: {
-        options: [
-          {
-            label: 'Project',
-            value: StoreScope.PROJECT,
-          },
-          {
-            label: 'Flow',
-            value: StoreScope.FLOW,
-          },
-        ],
-      },
-      defaultValue: StoreScope.FLOW,
+      defaultValue: '[]',
     }),
   },
   async run(context) {
@@ -60,10 +41,9 @@ export const publish_products = createAction({
     const token = context.auth.access_token;
 
     const streto_attributes =
-      (await context.store.get<StretoAttribute[]>(
-        context.propsValue['attributesField'],
-        context.propsValue['attributesScope']
-      )) ?? [];
+      typeof context.propsValue['streto_attributes'] === 'string'
+        ? JSON.parse(context.propsValue['streto_attributes'])
+        : context.propsValue['streto_attributes'];
 
     // check wether the product is already published
     const sku = item.attributes['sku'];
@@ -362,7 +342,7 @@ function processVariations(
           attribute_combinations: Object.keys(
             variant?.attributes['variantOptions']
           ).map((k) => {
-            const attr = streto_attributes?.find((a) => a['id'] === k);
+            const attr = streto_attributes.find((a) => a['id'] === k);
             return {
               name: attr?.title,
               value_name:
