@@ -6,7 +6,7 @@ export const fetch_attributes = createAction({
   name: 'fetch_attributes',
   auth: stretoAuth,
   displayName: 'Fetch Attributes',
-  description: 'Fetch Attributes and optionally keep the result in local DB',
+  description: 'Fetch Attributes',
   props: {
     system: Property.Checkbox({
       displayName: 'Include system attributes',

@@ -11,6 +11,15 @@ import {
   Item,
   Product,
 } from '../common/models';
+import {
+  CONFIGURABLE_TYPE,
+  GOLD_SPECIAL_LISTING_TYPE,
+  OPERATION_PUBLISH,
+  OPERATION_SKIPPED,
+  OPERATION_UPDATE,
+  SIMPLE_TYPE,
+  SKU,
+} from '../common/publish_constants';
 
 export const publish_products = createAction({
   name: 'publish_products',
@@ -28,37 +37,63 @@ export const publish_products = createAction({
       description: 'CDN Base URL',
       required: true,
     }),
-    streto_attributes: Property.LongText({
-      displayName: 'Streto attributes',
-      description: '',
+    catalogType: Property.ShortText({
+      displayName: 'Catalog Type',
+      description: 'Catalog Type',
       required: true,
-      defaultValue: '[]',
+    }),
+    stretoAttributes: Property.Array({
+      displayName: 'Streto Attributes',
+      description: 'Streto Attributes',
+      required: true,
+    }),
+    lastFlowExecKey: Property.ShortText({
+      displayName: 'Last execution flow key',
+      description: 'Last exectution flow storage key',
+      required: true,
     }),
   },
   async run(context) {
     const item = context.propsValue['product'] as Product;
     const cdnBaseUrl = context.propsValue['cdnBaseUrl'];
+    const catalogType = context.propsValue['catalogType'];
+    const lastFlowExecKey = context.propsValue['lastFlowExecKey'];
     const token = context.auth.access_token;
+    let publications = item.attributes['ml_publications'];
+    const streto_attributes: any = context.propsValue['stretoAttributes'];
 
-    const streto_attributes =
-      typeof context.propsValue['streto_attributes'] === 'string'
-        ? JSON.parse(context.propsValue['streto_attributes'])
-        : context.propsValue['streto_attributes'];
+    let operation = OPERATION_SKIPPED;
+    let error = undefined;
 
-    // check wether the product is already published
-    const sku = item.attributes['sku'];
+    const lastExecution =
+      (await context.store.get<number>(lastFlowExecKey, StoreScope.FLOW)) ??
+      undefined;
 
-    const mlaId = await context.store.get<string>(sku, StoreScope.FLOW);
+    // Check wether the product is already published
+    let publicationId = getPublicationId(catalogType, publications);
 
-    if (mlaId !== undefined && mlaId !== null) {
+    if (!isProductUpdated(item.createdAt, item.updatedAt, lastExecution)) {
+      return {
+        operation: operation,
+        publicationType: catalogType,
+        productSku: item.attributes.sku,
+        productId: item.id,
+        publications: publications,
+        status: 'done',
+      };
+    }
+
+    if (publicationId !== undefined) {
       // EDIT EXISTING PRODUCT
+      operation = OPERATION_UPDATE;
       try {
         let sold = false;
+
         const pub = (
           await httpClient.sendRequest<Item>({
             method: HttpMethod.GET,
             headers: { Authorization: `Bearer ${token}` },
-            url: `https://api.mercadolibre.com/items/${mlaId}?include_attributes=all`,
+            url: `${context.auth.baseUrl}/items/${publicationId}?include_attributes=all`,
           })
         ).body;
 
@@ -66,7 +101,7 @@ export const publish_products = createAction({
           sold = true;
         }
 
-        // edit configurable product
+        // EDIT CONFIGURABLE PRODUCT
         if (pub?.variations?.length) {
           const variations = processVariations(
             cdnBaseUrl,
@@ -78,9 +113,10 @@ export const publish_products = createAction({
           await httpClient.sendRequest<Item>({
             method: HttpMethod.PUT,
             headers: { Authorization: `Bearer ${token}` },
-            url: `https://api.mercadolibre.com/items/${mlaId}`,
+            url: `${context.auth.baseUrl}/items/${publicationId}`,
             body: {
               variations: variations.existing,
+              status: getPublicationStatus(catalogType, publications),
             },
           });
 
@@ -94,29 +130,31 @@ export const publish_products = createAction({
             );
             const existingPicts =
               pub.pictures?.map((pi) => ({ id: pi.id })) || [];
+
             await httpClient.sendRequest<Item>({
               method: HttpMethod.PUT,
               headers: { Authorization: `Bearer ${token}` },
-              url: `https://api.mercadolibre.com/items/${mlaId}`,
+              url: `${context.auth.baseUrl}/items/${publicationId}`,
               body: {
                 pictures: [...existingPicts, ...pictures],
                 variations: items,
               },
             });
           }
-        } // edit simple product
+        } // EDIT SIMPLE PRODUCT
         else {
           await httpClient.sendRequest<Item>({
             method: HttpMethod.PUT,
             headers: { Authorization: `Bearer ${token}` },
-            url: `https://api.mercadolibre.com/items/${mlaId}`,
+            url: `${context.auth.baseUrl}/items/${publicationId}`,
             body: {
-              ...(!sold && { title: item.attributes.name }),
+              ...(!sold && { title: item.attributes['ml_title'] }),
               available_quantity: item.qty,
               price: item.price,
               pictures: item.attributes['images']?.map((i) => ({
                 source: `${cdnBaseUrl}/${i.id}`,
               })),
+              status: getPublicationStatus(publications, catalogType),
             },
           });
         }
@@ -124,36 +162,35 @@ export const publish_products = createAction({
         await httpClient.sendRequest<Item>({
           method: HttpMethod.PUT,
           headers: { Authorization: `Bearer ${token}` },
-          url: `https://api.mercadolibre.com/items/${mlaId}/description?api_version=2`,
+          url: `${context.auth.baseUrl}/items/${publicationId}/description?api_version=2`,
           body: {
             plain_text: item.attributes['shortDescription'],
           },
         });
-      } catch (e) {
-        context.store.put<string>(
-          item.id,
-          JSON.stringify(e),
-          StoreScope.PROJECT
-        );
+      } catch (e: any) {
+        error = e.message;
       }
     } else {
       // PUBLISH NEW PRODUCT
-      const categoryId = getCategoryId(item.attributeSetName);
+      operation = OPERATION_PUBLISH;
+      const categoryId = getCategoryId(item.attributeSetNames);
 
       if (categoryId) {
         const persistedMeliAttrs = await context.store.get<string>(
           categoryId,
           StoreScope.FLOW
         );
+
         let meli_attributes = persistedMeliAttrs
           ? JSON.parse(persistedMeliAttrs)
           : undefined;
+
         if (!meli_attributes) {
           meli_attributes = (
             await httpClient.sendRequest<MeliAttribute[]>({
               method: HttpMethod.GET,
               headers: { Authorization: `Bearer ${token}` },
-              url: `https://api.mercadolibre.com/categories/${categoryId}/attributes`,
+              url: `${context.auth.baseUrl}/categories/${categoryId}/attributes`,
             })
           ).body;
           await context.store.put<string>(
@@ -163,78 +200,76 @@ export const publish_products = createAction({
           );
         }
 
-        if (item.type === 'simple') {
+        if (item.type === SIMPLE_TYPE) {
           const body = generateProduct(item, meli_attributes, cdnBaseUrl);
 
           try {
             const published = await httpClient.sendRequest<Item>({
               method: HttpMethod.POST,
               headers: { Authorization: `Bearer ${token}` },
-              url: 'https://api.mercadolibre.com/items',
+              url: `${context.auth.baseUrl}/items`,
               body: body,
             });
-            await context.store.put<string>(
-              item.attributes['sku'],
-              published.body.id,
-              StoreScope.FLOW
-            );
-          } catch (e) {
-            context.store.put<string>(
-              item.id,
-              JSON.stringify(e),
-              StoreScope.PROJECT
-            );
-          }
-        } else if (item.type === 'configurable') {
-          const body = generateProductVariation(
-            item,
-            meli_attributes,
-            streto_attributes,
-            cdnBaseUrl
-          );
 
+            publicationId = published.body.id;
+          } catch (e: any) {
+            error = e.message;
+          }
+        } else if (item.type === CONFIGURABLE_TYPE) {
           try {
+            const body = generateProductVariation(
+              item,
+              meli_attributes,
+              streto_attributes,
+              cdnBaseUrl
+            );
+
             const published = await httpClient.sendRequest<Item>({
               method: HttpMethod.POST,
               headers: { Authorization: `Bearer ${token}` },
-              url: 'https://api.mercadolibre.com/items',
+              url: `${context.auth.baseUrl}/items`,
               body: body,
             });
-            await context.store.put<string>(
-              item.attributes['sku'],
-              published.body.id,
-              StoreScope.FLOW
-            );
-          } catch (e) {
-            context.store.put<string>(
-              item.id,
-              JSON.stringify(e),
-              StoreScope.PROJECT
-            );
+
+            publicationId = published.body.id;
+          } catch (e: any) {
+            error = e.message;
           }
         }
+      } else {
+        error = 'Category Not Found';
       }
     }
 
+    if (!publications) {
+      publications = {};
+    }
+    publications[catalogType] = { [`${publicationId}`]: true };
+
     return {
-      result: 'completed',
+      operation: operation,
+      publicationType: catalogType,
+      productSku: item.attributes.sku,
+      productId: item.id,
+      publications: { ml_publications: publications },
+      status: error ? 'fail' : 'done',
+      error: error,
     };
   },
 });
 
-function getCategoryId(name?: string) {
-  return name?.split('__')[1];
+function getCategoryId(attributeSetNames?: string[]) {
+  return attributeSetNames
+    ?.find((attrSet) => attrSet.includes(' - MLA'))
+    ?.split(' - ')[1];
 }
 
-function getAttributeOption(value: string) {
-  return value?.split('--')[1]?.replaceAll('-', '');
-}
 function getAttributesValues(item: Product, attributes: MeliAttribute[]) {
   return attributes
     .map((a) => ({
       id: a.id,
       ...((a.values || a.id !== 'BRAND') && {
-        value_id: getAttributeOption(item.attributes[a.id]),
+        value_id: item.attributes[a.id],
       }),
       ...((!a.values || a.id === 'BRAND') && {
         value_name: item.attributes[a.id],
@@ -249,8 +284,8 @@ function generateProduct(
   cdnBaseUrl: string
 ) {
   return {
-    title: item.attributes.name,
-    category_id: getCategoryId(item.attributeSetName),
+    title: item.attributes['ml_title'],
+    category_id: getCategoryId(item.attributeSetNames),
     price: item.price,
     currency_id: 'ARS',
     available_quantity: item.qty,
@@ -258,9 +293,38 @@ function generateProduct(
     pictures: item.attributes['images']?.map((i) => ({
       source: `${cdnBaseUrl}/${i.id}`,
     })),
-    listing_type_id: 'gold_special',
+    listing_type_id: GOLD_SPECIAL_LISTING_TYPE,
     attributes: getAttributesValues(item, attributes),
   };
+}
+
+function getVariationTitle(attrTitle?: string) {
+  if (attrTitle?.toLowerCase().includes('color')) {
+    return 'Color';
+  }
+  if (attrTitle?.toLowerCase().includes('talle')) {
+    return 'Talle';
+  }
+  if (attrTitle?.toLowerCase().includes('genero')) {
+    return 'Genero';
+  }
+  return attrTitle;
+}
+
+function getAttributeCombinations(
+  variant: Product,
+  attributes: StretoAttribute[]
+) {
+  return Object.keys(variant.attributes['variantOptions']).map((k) => {
+    const attr = attributes.find((a: StretoAttribute) => a.id === k);
+    return {
+      name: getVariationTitle(attr?.title),
+      value_id:
+        attr?.validations?.[0].params.within[
+          variant?.attributes.variantOptions[k]
+        ],
+    };
+  });
 }
 
 function getVariations(
@@ -271,23 +335,15 @@ function getVariations(
   return variants?.map((variant) => ({
     price: variant.price,
     available_quantity: variant.qty,
-    attributes: [{ id: 'SELLER_SKU', value_name: variant.attributes['sku'] }],
+    attributes: [{ id: SKU, value_name: variant.attributes['sku'] }],
     picture_ids: variant.attributes['images']?.map(
       (i) => `${cdnBaseUrl}/${i.id}`
     ),
     sold_quantity: 0,
-    attribute_combinations: Object.keys(
-      variant.attributes['variantOptions']
-    ).map((k) => {
-      const attr = streto_attributes.find((a) => a['id'] === k);
-      return {
-        name: attr?.title,
-        value_name:
-          attr?.validations?.[0].params.within[
-            variant?.attributes.variantOptions[k]
-          ],
-      };
-    }),
+    attribute_combinations: getAttributeCombinations(
+      variant,
+      streto_attributes
+    ),
   }));
 }
 
@@ -298,8 +354,8 @@ function generateProductVariation(
   cdnBaseUrl: string
 ) {
   return {
-    title: item.attributes.name,
-    category_id: getCategoryId(item.attributeSetName),
+    title: item.attributes['ml_title'],
+    category_id: getCategoryId(item.attributeSetNames),
     price: item.price,
     currency_id: 'ARS',
     available_quantity: item.qty,
@@ -314,7 +370,7 @@ function generateProductVariation(
         }))
       ),
     ].flat(),
-    listing_type_id: 'gold_special',
+    listing_type_id: GOLD_SPECIAL_LISTING_TYPE,
     attributes: getAttributesValues(item, meli_attributes),
     variations: getVariations(streto_attributes, cdnBaseUrl, item.variants),
   };
@@ -339,18 +395,10 @@ function processVariations(
           id: mv.id,
           price: variant?.price,
           available_quantity: variant?.qty,
-          attribute_combinations: Object.keys(
-            variant?.attributes['variantOptions']
-          ).map((k) => {
-            const attr = streto_attributes.find((a) => a['id'] === k);
-            return {
-              name: attr?.title,
-              value_name:
-                attr?.validations?.[0].params.within[
-                  variant?.attributes.variantOptions[k]
-                ],
-            };
-          }),
+          attribute_combinations: getAttributeCombinations(
+            variant,
+            streto_attributes
+          ),
         });
         break;
       }
@@ -359,27 +407,45 @@ function processVariations(
       added.push({
         price: variant.price,
         available_quantity: variant.qty,
-        attributes: [
-          { id: 'SELLER_SKU', value_name: variant.attributes['sku'] },
-        ],
+        attributes: [{ id: SKU, value_name: variant.attributes['sku'] }],
         picture_ids: variant.attributes['images']?.map(
           (i) => `${cdnBaseUrl}/${i.id}`
         ),
         sold_quantity: 0,
-        attribute_combinations: Object.keys(
-          variant.attributes['variantOptions']
-        ).map((k) => {
-          const attr = streto_attributes.find((a) => a['id'] === k);
-          return {
-            name: attr?.title,
-            value_name:
-              attr?.validations?.[0].params.within[
-                variant?.attributes.variantOptions[k]
-              ],
-          };
-        }),
+        attribute_combinations: getAttributeCombinations(
+          variant,
+          streto_attributes
+        ),
       });
     }
   }
   return { existing, added };
+}
+
+function getPublicationId(catalogType: string, ml_publications?: any) {
+  return ml_publications && ml_publications[catalogType]
+    ? Object.keys(ml_publications[catalogType])[0]
+    : undefined;
+}
+
+function getPublicationStatus(catalogType: string, ml_publications?: any) {
+  return ml_publications
+    ? ml_publications[catalogType]?.values()[0]
+      ? 'active'
+      : 'paused'
+    : 'active';
+}
+
+function isProductUpdated(
+  createdAt: string,
+  updatedAt?: string,
+  lastFlowExecution?: number
+) {
+  if (lastFlowExecution) {
+    const milliseconds = updatedAt
+      ? Date.parse(updatedAt)
+      : Date.parse(createdAt);
+    return lastFlowExecution < milliseconds;
+  }
+  return true;
 }

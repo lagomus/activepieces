@@ -1,8 +1,4 @@
-import {
-  createAction,
-  Property,
-  StoreScope,
-} from '@activepieces/pieces-framework';
+import { createAction, Property, StoreScope } from '@activepieces/pieces-framework';
 import { httpClient, HttpMethod } from '@activepieces/pieces-common';
 import { meliAuth } from '../..';
 import { Category } from '../common/models';
@@ -11,9 +7,9 @@ export const fetch_categories = createAction({
   name: 'fetch_categories',
   auth: meliAuth,
   displayName: 'Fetch Categories',
-  description: 'Fetch Categories',
+  description: 'Fetch the selected category including its subcategory tree',
   props: {
-    parent_category: Property.ShortText({
+    root_category: Property.ShortText({
       displayName: 'Parent Category',
       description: 'Parent Category Id',
       required: true,
@@ -21,14 +17,23 @@ export const fetch_categories = createAction({
     }),
   },
   async run(context) {
-    context.store.delete('ATTRIBUTE_LIST', StoreScope.FLOW);
-    context.store.delete('ATTRIBUTE_SET_LIST', StoreScope.FLOW);
 
-    const parentCategoryId = context.propsValue['parent_category'];
+    ///
+    await context.store.delete('ATTRIBUTE_LIST', StoreScope.FLOW);
+    await context.store.delete('ATTRIBUTE_SET_LIST', StoreScope.FLOW);
+    ///
+
+    const parentCategoryId = context.propsValue['root_category'];
     const token = context.auth.access_token;
+    const baseUrl = context.auth.baseUrl;
     const result = new Map<string, Category>();
-    const category = await fetchCategory(parentCategoryId, token, result);
-    await collectCategoryIds(category, token, result);
+    const category = await fetchCategory(
+      parentCategoryId,
+      baseUrl,
+      token,
+      result
+    );
+    await collectCategoryIds(category, baseUrl, token, result);
     return {
       categories: Array.from(result.values()),
     };
@@ -37,13 +42,14 @@ export const fetch_categories = createAction({
 
 async function fetchCategory(
   categoryId: string,
+  apiBaseUrl: string,
   token: string,
   uniqueIds: Map<string, Category>
 ) {
   const response = await httpClient.sendRequest<Category>({
     method: HttpMethod.GET,
     headers: { Authorization: `Bearer ${token}` },
-    url: `https://api.mercadolibre.com/categories/${categoryId}`,
+    url: `${apiBaseUrl}/categories/${categoryId}`,
   });
   uniqueIds.set(categoryId, {
     id: response.body.id,
@@ -55,6 +61,7 @@ async function fetchCategory(
 
 async function collectCategoryIds(
   category: Category,
+  apiBaseUrl: string,
   token: string,
   uniqueIds: Map<string, Category>
 ) {
@@ -63,10 +70,11 @@ async function collectCategoryIds(
       if (!uniqueIds.has(childCategory.id)) {
         const category = await fetchCategory(
           childCategory.id,
+          apiBaseUrl,
           token,
           uniqueIds
         );
-        await collectCategoryIds(category, token, uniqueIds);
+        await collectCategoryIds(category, apiBaseUrl, token, uniqueIds);
       }
     }
   }

@@ -92,6 +92,20 @@ export const fetch_products = createAction({
     });
     let products: Product[] = response.body;
 
+    let priceListId = undefined;
+    if (context.propsValue['with_price']) {
+      const priceListName = context.propsValue['pricelist_name'];
+      const priceLists = await httpClient.sendRequest<PriceList[]>({
+        method: HttpMethod.GET,
+        headers: {
+          'x-api-key': context.auth.apiKey,
+        },
+        url: `${context.auth.baseUrl}/app/price-lists?filter={"where":{"name":"${priceListName}"}}`,
+      });
+      priceListId = priceLists.body[0]?.id;
+    }
+
+    // ***** Product Children ***** //
     if (context.propsValue['with_children']) {
       const productIds = products
         .filter((p: Product) => p.type === 'configurable')
@@ -132,20 +146,25 @@ export const fetch_products = createAction({
         }
 
         if (context.propsValue['with_price']) {
-          const childrenPrices = await httpClient.sendRequest<Price[]>({
-            method: HttpMethod.GET,
-            headers: {
-              'x-api-key': context.auth.apiKey,
-            },
-            url: `${
-              context.auth.baseUrl
-            }/app/prices?filter={"where":{"productId":{"inq":${JSON.stringify(
-              children.map((c) => c.id)
-            )}}}}`,
-          });
-
+          const childrenIds = children.map((c) => c.id);
+          const childrenPrices: Price[] = [];
+          for (let i = 0; i < childrenIds.length; i += 20) {
+            const chunk = childrenIds.slice(i, i + 20);
+            const prices = await httpClient.sendRequest<Price[]>({
+              method: HttpMethod.GET,
+              headers: {
+                'x-api-key': context.auth.apiKey,
+              },
+              url: `${
+                context.auth.baseUrl
+              }/app/price-lists/${priceListId}/prices?filter={"where":{"productId":{"inq":${JSON.stringify(
+                chunk
+              )}}}}`,
+            });
+            childrenPrices.push(...prices.body);
+          }
           children = children.map((p) => {
-            const price = childrenPrices.body.find(
+            const price = childrenPrices.find(
               (item) => item.productId === p.id
             );
             return { ...p, price: price?.value };
@@ -161,6 +180,7 @@ export const fetch_products = createAction({
         return p.type === 'simple' ? p : { ...p, variants: variants };
       });
     }
+    // ********** //
 
     if (context.propsValue['with_stock']) {
       const productIds = products.map((p: Product) => p.id);
@@ -182,16 +202,6 @@ export const fetch_products = createAction({
     }
 
     if (context.propsValue['with_price']) {
-      const priceListName = context.propsValue['pricelist_name'];
-      const priceLists = await httpClient.sendRequest<PriceList[]>({
-        method: HttpMethod.GET,
-        headers: {
-          'x-api-key': context.auth.apiKey,
-        },
-        url: `${context.auth.baseUrl}/app/price-lists?filter={"where":{"name":"${priceListName}"}}`,
-      });
-
-      const priceListId = priceLists.body[0]?.id;
       const productIds = products.map((p: Product) => p.id);
       const priceList = await httpClient.sendRequest<Price[]>({
         method: HttpMethod.GET,
@@ -225,10 +235,10 @@ export const fetch_products = createAction({
         )}}}]}}`,
       });
       products = products.map((p) => {
-        const attrSet = response.body.find((item) =>
-          p.attributeSets?.includes(item.id)
-        );
-        return { ...p, attributeSetName: attrSet?.name };
+        const attrSetNames = response.body
+          .filter((item) => p.attributeSets?.includes(item.id))
+          .map((attr) => attr.name);
+        return { ...p, attributeSetNames: attrSetNames };
       });
     }
 
