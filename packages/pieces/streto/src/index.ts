@@ -14,6 +14,7 @@ import { save_attributes } from './lib/actions/save-attributes';
 import { import_reviews_data } from './lib/actions/import-reviews-data';
 import { count_reviews_imported } from './lib/actions/count-reviews';
 import { fetch_attributes } from './lib/actions/fetch-attributes';
+import { update_product } from './lib/actions/update-product';
 
 const authMarkdown = `
 To generate an API key, follow the steps below in Streto Admin:
@@ -58,6 +59,7 @@ export const streto = createPiece({
     import_reviews_data,
     count_reviews_imported,
     fetch_attributes,
+    update_product,
   ],
   triggers: [],
 });

@@ -122,14 +122,17 @@ export type Product = {
   type?: string;
   qty?: number;
   price?: number;
+  createdAt: string;
+  updatedAt?: string;
   attributes: StretoAttribute;
   scopedAttributes?: ScopedAttributes;
   attributeSets?: string[];
-  attributeSetName?: string;
+  attributeSetNames?: string[];
   variants?: Product[];
 };
 
 export type StretoAttribute = {
+  id: string;
   name?: string;
   title?: string;
   sku: string;
@@ -180,6 +183,7 @@ export type MeliAttribute = {
   default_unit?: string;
   tags: {
     allow_variations?: boolean;
+    required?: boolean;
   };
 };
 

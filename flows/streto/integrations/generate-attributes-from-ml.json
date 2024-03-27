@@ -1,0 +1,97 @@
+{
+  "id": "WtB8Madut4aWBochq6VSY",
+  "created": "1711576066179",
+  "updated": "1711576066179",
+  "name": "generate-attributes-from-ml",
+  "description": "",
+  "tags": [],
+  "pieces": [
+    "@lagomus/piece-mercadolibre",
+    "@lagomus/piece-streto"
+  ],
+  "blogUrl": "",
+  "template": {
+    "displayName": "generate-attributes-from-ml",
+    "trigger": {
+      "name": "trigger",
+      "valid": true,
+      "displayName": "Webhook Trigger",
+      "nextAction": {
+        "displayName": "Fetch Categories",
+        "name": "step_5",
+        "valid": true,
+        "type": "PIECE",
+        "settings": {
+          "packageType": "REGISTRY",
+          "pieceType": "OFFICIAL",
+          "pieceName": "@lagomus/piece-mercadolibre",
+          "pieceVersion": "^1.0.13",
+          "input": {
+            "auth": "{{connections['_lagomus_piece-mercadolibre']}}",
+            "root_category": "MLA1292"
+          },
+          "inputUiInfo": {},
+          "actionName": "fetch_categories"
+        },
+        "nextAction": {
+          "displayName": "Loop on Items",
+          "name": "step_3",
+          "valid": true,
+          "type": "LOOP_ON_ITEMS",
+          "settings": {
+            "items": "{{step_5['categories']}}",
+            "inputUiInfo": {}
+          },
+          "nextAction": {
+            "displayName": "Save Attributes",
+            "name": "step_4",
+            "valid": true,
+            "type": "PIECE",
+            "settings": {
+              "packageType": "REGISTRY",
+              "pieceType": "OFFICIAL",
+              "pieceName": "@lagomus/piece-streto",
+              "pieceVersion": "^1.0.14",
+              "input": {
+                "auth": "{{connections['streto']}}",
+                "attributeKey": "ATTRIBUTE_LIST",
+                "attributeSetKey": "ATTRIBUTE_SET_LIST"
+              },
+              "inputUiInfo": {},
+              "actionName": "save_attributes"
+            }
+          },
+          "firstLoopAction": {
+            "displayName": "Fetch Attributes",
+            "name": "step_1",
+            "valid": true,
+            "type": "PIECE",
+            "settings": {
+              "packageType": "REGISTRY",
+              "pieceType": "OFFICIAL",
+              "pieceName": "@lagomus/piece-mercadolibre",
+              "pieceVersion": "^1.0.13",
+              "input": {
+                "auth": "{{connections['_lagomus_piece-mercadolibre']}}",
+                "category": "{{step_3.item}}",
+                "attributeKey": "ATTRIBUTE_LIST",
+                "attributeSetKey": "ATTRIBUTE_SET_LIST"
+              },
+              "inputUiInfo": {},
+              "actionName": "fetch_attributes"
+            }
+          }
+        }
+      },
+      "type": "WEBHOOK",
+      "settings": {
+        "inputUiInfo": {}
+      }
+    },
+    "valid": true
+  },
+  "userId": null,
+  "imageUrl": null,
+  "featuredDescription": "",
+  "isFeatured": false
+}

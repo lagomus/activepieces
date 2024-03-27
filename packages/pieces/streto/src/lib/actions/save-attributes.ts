@@ -11,18 +11,34 @@ export const save_attributes = createAction({
   auth: stretoAuth,
   displayName: 'Save Attributes',
   description:
-    'Save Attributes and Attribute Sets retrieving values from local DB',
-  props: {},
+    'Transform Mercadolibre attributes and save Attributes and Attribute Sets retrieving values from local DB',
+  props: {
+    attributeKey: Property.ShortText({
+      displayName: 'Attributes DB Key',
+      description: 'Key name where the attributes are stored in DB',
+      required: true,
+      defaultValue: 'ATTRIBUTE_LIST',
+    }),
+    attributeSetKey: Property.ShortText({
+      displayName: 'Attribute Sets DB Key',
+      description: 'Key name where the attribute sets are stored in DB',
+      required: true,
+      defaultValue: 'ATTRIBUTE_SET_LIST',
+    }),
+  },
   async run(context) {
     let resAttr = undefined;
     let resAttrSet = undefined;
 
+    const attributeKey = context.propsValue['attributeKey'];
+    const attributeSetKey = context.propsValue['attributeSetKey'];
+
     const attributes = (await context.store.get<string>(
-      'ATTRIBUTE_LIST',
+      attributeKey,
       StoreScope.FLOW
     )) as string;
     const attributeSets = (await context.store.get<string>(
-      'ATTRIBUTE_SET_LIST',
+      attributeSetKey,
       StoreScope.FLOW
     )) as string;
 
@@ -38,7 +54,15 @@ export const save_attributes = createAction({
           'Content-Type': 'application/json',
         },
         url: `${context.auth.baseUrl}/app/import-processes/attribute/import?source=json`,
-        body: attrValues,
+        body: attrValues.map((attr) => ({
+          code: attr.code,
+          title: attr.title,
+          type: attr.type,
+          searchable: attr.searchable,
+          filterable: attr.filterable,
+          sortable: attr.sortable,
+          options: attr.options,
+        })),
       });
     }
 
