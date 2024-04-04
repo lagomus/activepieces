@@ -46,6 +46,7 @@ export const publish_products = createAction({
       displayName: 'Streto Attributes',
       description: 'Streto Attributes',
       required: true,
+      defaultValue: [],
     }),
     lastFlowExecKey: Property.ShortText({
       displayName: 'Last execution flow key',
@@ -60,7 +61,11 @@ export const publish_products = createAction({
     const lastFlowExecKey = context.propsValue['lastFlowExecKey'];
     const token = context.auth.access_token;
     let publications = item.attributes['ml_publications'];
-    const streto_attributes: any = context.propsValue['stretoAttributes'];
+    const streto_attributes: any = Array.isArray(
+      context.propsValue['stretoAttributes']
+    )
+      ? context.propsValue['stretoAttributes'].flat()
+      : [];
 
     let operation = OPERATION_SKIPPED;
     let error = undefined;
@@ -122,8 +127,8 @@ export const publish_products = createAction({
 
           if (variations.added?.length) {
             const items = [
-              ...variations.added.values(),
-              ...variations.existing.map((v) => ({ id: v.id })).values(),
+              ...variations.added?.values(),
+              ...variations.existing?.map((v) => ({ id: v.id }))?.values(),
             ];
             const pictures = variations.added.flatMap((v) =>
               v.picture_ids?.map((pi) => ({ source: pi }))
@@ -168,6 +173,7 @@ export const publish_products = createAction({
           },
         });
       } catch (e: any) {
+        console.dir(e);
         error = e.message;
       }
     } else {
@@ -269,10 +275,16 @@ function getAttributesValues(item: Product, attributes: MeliAttribute[]) {
     .map((a) => ({
       id: a.id,
       ...((a.values || a.id !== 'BRAND') && {
-        value_id: item.attributes[a.id],
+        value_id:
+          item.attributes[a.id] && a.value_type === 'number_unit'
+            ? `${item.attributes[a.id]} ${a.default_unit}`
+            : item.attributes[a.id],
       }),
       ...((!a.values || a.id === 'BRAND') && {
-        value_name: item.attributes[a.id],
+        value_name:
+          item.attributes[a.id] && a.value_type === 'number_unit'
+            ? `${item.attributes[a.id]} ${a.default_unit}`
+            : item.attributes[a.id],
       }),
     }))
     .filter((v) => v.value_id !== undefined || v.value_name !== undefined);
@@ -315,13 +327,13 @@ function getAttributeCombinations(
   variant: Product,
   attributes: StretoAttribute[]
 ) {
-  return Object.keys(variant.attributes['variantOptions']).map((k) => {
-    const attr = attributes.find((a: StretoAttribute) => a.id === k);
+  return Object.keys(variant.attributes.variantOptions).map((k) => {
+    const attr = attributes.find((a) => a.id === k);
     return {
       name: getVariationTitle(attr?.title),
-      value_id:
+      value_name:
         attr?.validations?.[0].params.within[
-          variant?.attributes.variantOptions[k]
+          variant?.attributes?.variantOptions[k]
         ],
     };
   });
@@ -371,7 +383,9 @@ function generateProductVariation(
       ),
     ].flat(),
     listing_type_id: GOLD_SPECIAL_LISTING_TYPE,
-    attributes: getAttributesValues(item, meli_attributes),
+    attributes: getAttributesValues(item, meli_attributes).filter(
+      (a) => a.id !== SKU
+    ),
     variations: getVariations(streto_attributes, cdnBaseUrl, item.variants),
   };
 }
@@ -429,8 +443,10 @@ function getPublicationId(catalogType: string, ml_publications?: any) {
 }
 
 function getPublicationStatus(catalogType: string, ml_publications?: any) {
-  return ml_publications
-    ? ml_publications[catalogType]?.values()[0]
+  console.dir(ml_publications);
+  console.dir(catalogType);
+  return ml_publications && ml_publications[catalogType]
+    ? Object.values(ml_publications[catalogType])[0]
       ? 'active'
       : 'paused'
     : 'active';
