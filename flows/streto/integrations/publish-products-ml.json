@@ -1,7 +1,7 @@
 {
-  "id": "86PcAHL1W8hA9MCELOH6i",
-  "created": "1711576122776",
-  "updated": "1711576122776",
+  "id": "kilNVFdoRRJ2MYFhnRkJ7",
+  "created": "1712325241869",
+  "updated": "1712325241869",
   "name": "publish-products-ml",
   "description": "",
   "tags": [],
@@ -21,10 +21,37 @@
         "displayName": "Fetch Attributes",
         "name": "step_13",
         "valid": true,
+        "type": "PIECE",
+        "settings": {
+          "packageType": "REGISTRY",
+          "pieceType": "OFFICIAL",
+          "pieceName": "@lagomus/piece-streto",
+          "pieceVersion": "^1.0.14",
+          "input": {
+            "auth": "{{connections['streto']}}",
+            "system": false
+          },
+          "inputUiInfo": {},
+          "actionName": "fetch_attributes"
+        },
         "nextAction": {
           "displayName": "Put",
           "name": "step_14",
           "valid": true,
+          "type": "PIECE",
+          "settings": {
+            "packageType": "REGISTRY",
+            "pieceType": "OFFICIAL",
+            "pieceName": "@activepieces/piece-store",
+            "pieceVersion": "~0.4.1",
+            "input": {
+              "key": "STRETO_ATTRIBUTES",
+              "value": "{{step_13['attributes']}}",
+              "store_scope": "FLOW"
+            },
+            "inputUiInfo": {},
+            "actionName": "put"
+          },
           "nextAction": {
             "displayName": "Loop on Items",
             "name": "step_8",
@@ -184,25 +211,6 @@
                             "displayName": "Publish Products",
                             "name": "step_6",
                             "valid": true,
-                            "type": "PIECE",
-                            "settings": {
-                              "packageType": "REGISTRY",
-                              "pieceType": "OFFICIAL",
-                              "pieceName": "@lagomus/piece-mercadolibre",
-                              "pieceVersion": "^1.0.13",
-                              "input": {
-                                "auth": "{{connections['_lagomus_piece-mercadolibre']}}",
-                                "product": "{{step_7.item}}",
-                                "cdnBaseUrl": "{{trigger['body']['cdnBaseUrl']}}",
-                                "catalogType": "{{step_8.item.catalogType}}",
-                                "stretoAttributes": [
-                                  "{{step_15}}"
-                                ],
-                                "lastFlowExecKey": "LAST_EXECUTION"
-                              },
-                              "inputUiInfo": {},
-                              "actionName": "publish_products"
-                            },
                             "nextAction": {
                               "displayName": "Branch",
                               "name": "step_10",
@@ -246,6 +254,23 @@
                                   "actionName": "update_product"
                                 }
                               }
+                            },
+                            "type": "PIECE",
+                            "settings": {
+                              "packageType": "REGISTRY",
+                              "pieceType": "OFFICIAL",
+                              "pieceName": "@lagomus/piece-mercadolibre",
+                              "pieceVersion": "^1.0.13",
+                              "input": {
+                                "auth": "{{connections['_lagomus_piece-mercadolibre']}}",
+                                "product": "{{step_7.item}}",
+                                "cdnBaseUrl": "{{trigger['body']['cdnBaseUrl']}}",
+                                "catalogType": "{{step_8.item.catalogType}}",
+                                "stretoAttributes": "{{step_15}}",
+                                "lastFlowExecKey": "LAST_EXECUTION"
+                              },
+                              "inputUiInfo": {},
+                              "actionName": "publish_products"
                             }
                           }
                         }
@@ -255,34 +280,7 @@
                 }
               }
             }
-          },
-          "type": "PIECE",
-          "settings": {
-            "packageType": "REGISTRY",
-            "pieceType": "OFFICIAL",
-            "pieceName": "@activepieces/piece-store",
-            "pieceVersion": "~0.4.1",
-            "input": {
-              "key": "STRETO_ATTRIBUTES",
-              "value": "{{step_13['attributes']}}",
-              "store_scope": "FLOW"
-            },
-            "inputUiInfo": {},
-            "actionName": "put"
           }
-        },
-        "type": "PIECE",
-        "settings": {
-          "packageType": "REGISTRY",
-          "pieceType": "OFFICIAL",
-          "pieceName": "@lagomus/piece-streto",
-          "pieceVersion": "^1.0.14",
-          "input": {
-            "auth": "{{connections['streto']}}",
-            "system": false
-          },
-          "inputUiInfo": {},
-          "actionName": "fetch_attributes"
         }
       },
       "type": "WEBHOOK",
