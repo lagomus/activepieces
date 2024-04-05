@@ -1,0 +1,48 @@
+{
+  "id": "czrSmLzTk92NwOaPHUBwC",
+  "created": "1712343219900",
+  "updated": "1712343219900",
+  "name": "update-product-stock",
+  "description": "",
+  "tags": [],
+  "pieces": [
+    "@lagomus/piece-streto"
+  ],
+  "blogUrl": "",
+  "template": {
+    "displayName": "update-product-stock",
+    "trigger": {
+      "name": "trigger",
+      "valid": true,
+      "displayName": "Webhook Trigger",
+      "nextAction": {
+        "displayName": "Update Stock",
+        "name": "step_1",
+        "valid": true,
+        "type": "PIECE",
+        "settings": {
+          "packageType": "REGISTRY",
+          "pieceType": "OFFICIAL",
+          "pieceName": "@lagomus/piece-streto",
+          "pieceVersion": "1.0.15",
+          "input": {
+            "auth": "{{connections['streto']}}",
+            "productId": "1e2d7887-20ee-42b3-b9ef-aa1c6a641564",
+            "stock": "1010"
+          },
+          "inputUiInfo": {},
+          "actionName": "update_stock"
+        }
+      },
+      "type": "WEBHOOK",
+      "settings": {
+        "inputUiInfo": {}
+      }
+    },
+    "valid": true
+  },
+  "userId": null,
+  "imageUrl": null,
+  "featuredDescription": "",
+  "isFeatured": false
+}
