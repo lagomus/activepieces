@@ -1,13 +1,13 @@
 {
-  "id": "kilNVFdoRRJ2MYFhnRkJ7",
-  "created": "1712325241869",
-  "updated": "1712325241869",
+  "id": "YwibS9IDHdfxK6AMolckF",
+  "created": "1712604360332",
+  "updated": "1712604360332",
   "name": "publish-products-ml",
   "description": "",
   "tags": [],
   "pieces": [
-    "@lagomus/piece-streto",
     "@activepieces/piece-store",
+    "@lagomus/piece-streto",
     "@lagomus/piece-mercadolibre"
   ],
   "blogUrl": "",
@@ -18,259 +18,256 @@
       "valid": true,
       "displayName": "Webhook Trigger",
       "nextAction": {
-        "displayName": "Fetch Attributes",
-        "name": "step_13",
+        "displayName": "Get",
+        "name": "step_16",
         "valid": true,
-        "type": "PIECE",
-        "settings": {
-          "packageType": "REGISTRY",
-          "pieceType": "OFFICIAL",
-          "pieceName": "@lagomus/piece-streto",
-          "pieceVersion": "^1.0.14",
-          "input": {
-            "auth": "{{connections['streto']}}",
-            "system": false
-          },
-          "inputUiInfo": {},
-          "actionName": "fetch_attributes"
-        },
         "nextAction": {
-          "displayName": "Put",
-          "name": "step_14",
+          "displayName": "Code",
+          "name": "step_17",
           "valid": true,
-          "type": "PIECE",
-          "settings": {
-            "packageType": "REGISTRY",
-            "pieceType": "OFFICIAL",
-            "pieceName": "@activepieces/piece-store",
-            "pieceVersion": "~0.4.1",
-            "input": {
-              "key": "STRETO_ATTRIBUTES",
-              "value": "{{step_13['attributes']}}",
-              "store_scope": "FLOW"
-            },
-            "inputUiInfo": {},
-            "actionName": "put"
-          },
           "nextAction": {
-            "displayName": "Loop on Items",
-            "name": "step_8",
+            "displayName": "Branch",
+            "name": "step_18",
             "valid": true,
-            "type": "LOOP_ON_ITEMS",
-            "settings": {
-              "items": "{{trigger['body']['catalogs']}}",
-              "inputUiInfo": {}
-            },
             "nextAction": {
-              "displayName": "Code",
-              "name": "step_11",
-              "valid": true,
-              "type": "CODE",
-              "settings": {
-                "sourceCode": {
-                  "packageJson": "\n      {\n        \"dependencies\": {\n        }\n      }",
-                  "code": "export const code = async (inputs) => {\n    return Date.now();\n};"
-                },
-                "input": {},
-                "inputUiInfo": {}
-              },
-              "nextAction": {
-                "displayName": "Put",
-                "name": "step_12",
-                "valid": true,
-                "type": "PIECE",
-                "settings": {
-                  "packageType": "REGISTRY",
-                  "pieceType": "OFFICIAL",
-                  "pieceName": "@activepieces/piece-store",
-                  "pieceVersion": "~0.4.1",
-                  "input": {
-                    "key": "LAST_EXECUTION",
-                    "value": "{{step_11}}",
-                    "store_scope": "FLOW"
-                  },
-                  "inputUiInfo": {},
-                  "actionName": "put"
-                }
-              }
-            },
-            "firstLoopAction": {
-              "displayName": "Fetch Catalog Id by Name",
-              "name": "step_1",
+              "displayName": "Put",
+              "name": "step_14",
               "valid": true,
               "type": "PIECE",
               "settings": {
                 "packageType": "REGISTRY",
                 "pieceType": "OFFICIAL",
-                "pieceName": "@lagomus/piece-streto",
-                "pieceVersion": "^1.0.14",
+                "pieceName": "@activepieces/piece-store",
+                "pieceVersion": "0.4.1",
                 "input": {
-                  "auth": "{{connections['streto']}}",
-                  "catalog_name": "{{step_8.item.catalogName}}"
+                  "key": "STRETO_ATTRIBUTES",
+                  "value": "{{step_13['attributes']}}",
+                  "store_scope": "FLOW"
                 },
                 "inputUiInfo": {},
-                "actionName": "fetch_catalog_id"
+                "actionName": "put"
               },
               "nextAction": {
-                "displayName": "Fetch Products count by Catalog Id",
-                "name": "step_2",
+                "displayName": "Loop on Items",
+                "name": "step_8",
                 "valid": true,
-                "type": "PIECE",
+                "type": "LOOP_ON_ITEMS",
                 "settings": {
-                  "packageType": "REGISTRY",
-                  "pieceType": "OFFICIAL",
-                  "pieceName": "@lagomus/piece-streto",
-                  "pieceVersion": "^1.0.14",
-                  "input": {
-                    "auth": "{{connections['streto']}}",
-                    "catalog_id": "{{step_1['catalogId']}}"
-                  },
-                  "inputUiInfo": {},
-                  "actionName": "count_products"
+                  "items": "{{trigger['body']['catalogs']}}",
+                  "inputUiInfo": {}
                 },
                 "nextAction": {
-                  "displayName": "Build Pages",
-                  "name": "step_3",
+                  "displayName": "Code",
+                  "name": "step_11",
+                  "valid": true,
+                  "type": "CODE",
+                  "settings": {
+                    "sourceCode": {
+                      "packageJson": "\n      {\n        \"dependencies\": {\n        }\n      }",
+                      "code": "export const code = async (inputs) => {\n    return Date.now();\n};"
+                    },
+                    "input": {},
+                    "inputUiInfo": {}
+                  },
+                  "nextAction": {
+                    "displayName": "Put",
+                    "name": "step_12",
+                    "valid": true,
+                    "type": "PIECE",
+                    "settings": {
+                      "packageType": "REGISTRY",
+                      "pieceType": "OFFICIAL",
+                      "pieceName": "@activepieces/piece-store",
+                      "pieceVersion": "0.4.1",
+                      "input": {
+                        "key": "LAST_EXECUTION",
+                        "value": "{{step_11}}",
+                        "store_scope": "FLOW"
+                      },
+                      "inputUiInfo": {},
+                      "actionName": "put"
+                    }
+                  }
+                },
+                "firstLoopAction": {
+                  "displayName": "Fetch Catalog Id by Name",
+                  "name": "step_1",
                   "valid": true,
                   "type": "PIECE",
                   "settings": {
                     "packageType": "REGISTRY",
                     "pieceType": "OFFICIAL",
                     "pieceName": "@lagomus/piece-streto",
-                    "pieceVersion": "^1.0.14",
+                    "pieceVersion": "1.0.14",
                     "input": {
                       "auth": "{{connections['streto']}}",
-                      "total_items": "{{step_2['count']}}",
-                      "page_size": "50"
+                      "catalog_name": "{{step_8.item.catalogName}}"
                     },
                     "inputUiInfo": {},
-                    "actionName": "build_pages"
+                    "actionName": "fetch_catalog_id"
                   },
                   "nextAction": {
-                    "displayName": "Loop on Items",
-                    "name": "step_4",
+                    "displayName": "Fetch Products count by Catalog Id",
+                    "name": "step_2",
                     "valid": true,
-                    "type": "LOOP_ON_ITEMS",
+                    "type": "PIECE",
                     "settings": {
-                      "items": "{{step_3['pages']}}",
-                      "inputUiInfo": {}
+                      "packageType": "REGISTRY",
+                      "pieceType": "OFFICIAL",
+                      "pieceName": "@lagomus/piece-streto",
+                      "pieceVersion": "1.0.14",
+                      "input": {
+                        "auth": "{{connections['streto']}}",
+                        "catalog_id": "{{step_1['catalogId']}}"
+                      },
+                      "inputUiInfo": {},
+                      "actionName": "count_products"
                     },
-                    "firstLoopAction": {
-                      "displayName": "Fetch Products by Catalog Id",
-                      "name": "step_5",
+                    "nextAction": {
+                      "displayName": "Build Pages",
+                      "name": "step_3",
                       "valid": true,
                       "type": "PIECE",
                       "settings": {
                         "packageType": "REGISTRY",
                         "pieceType": "OFFICIAL",
                         "pieceName": "@lagomus/piece-streto",
-                        "pieceVersion": "^1.0.14",
+                        "pieceVersion": "1.0.14",
                         "input": {
                           "auth": "{{connections['streto']}}",
-                          "catalog_id": "{{step_1['catalogId']}}",
-                          "filter_array": [],
-                          "with_stock": true,
-                          "with_price": true,
-                          "with_children": true,
-                          "with_attribute_set_names": true,
-                          "pricelist_name": "{{step_8.item.priceListName}}",
-                          "skip": "{{step_4.item.start}}",
-                          "limit": "{{step_4.item.end}}"
+                          "total_items": "{{step_2['count']}}",
+                          "page_size": "50"
                         },
                         "inputUiInfo": {},
-                        "actionName": "fetch_products"
+                        "actionName": "build_pages"
                       },
                       "nextAction": {
                         "displayName": "Loop on Items",
-                        "name": "step_7",
+                        "name": "step_4",
                         "valid": true,
                         "type": "LOOP_ON_ITEMS",
                         "settings": {
-                          "items": "{{step_5['products']}}",
+                          "items": "{{step_3['pages']}}",
                           "inputUiInfo": {}
                         },
                         "firstLoopAction": {
-                          "displayName": "Get",
-                          "name": "step_15",
+                          "displayName": "Fetch Products by Catalog Id",
+                          "name": "step_5",
                           "valid": true,
                           "type": "PIECE",
                           "settings": {
                             "packageType": "REGISTRY",
                             "pieceType": "OFFICIAL",
-                            "pieceName": "@activepieces/piece-store",
-                            "pieceVersion": "~0.4.1",
+                            "pieceName": "@lagomus/piece-streto",
+                            "pieceVersion": "1.0.14",
                             "input": {
-                              "key": "STRETO_ATTRIBUTES",
-                              "store_scope": "FLOW",
-                              "defaultValue": "[]"
+                              "auth": "{{connections['streto']}}",
+                              "catalog_id": "{{step_1['catalogId']}}",
+                              "filter_array": [],
+                              "with_stock": true,
+                              "with_price": true,
+                              "with_children": true,
+                              "with_attribute_set_names": true,
+                              "pricelist_name": "{{step_8.item.priceListName}}",
+                              "skip": "{{step_4.item.start}}",
+                              "limit": "{{step_4.item.end}}"
                             },
                             "inputUiInfo": {},
-                            "actionName": "get"
+                            "actionName": "fetch_products"
                           },
                           "nextAction": {
-                            "displayName": "Publish Products",
-                            "name": "step_6",
+                            "displayName": "Loop on Items",
+                            "name": "step_7",
                             "valid": true,
-                            "nextAction": {
-                              "displayName": "Branch",
-                              "name": "step_10",
+                            "type": "LOOP_ON_ITEMS",
+                            "settings": {
+                              "items": "{{step_5['products']}}",
+                              "inputUiInfo": {}
+                            },
+                            "firstLoopAction": {
+                              "displayName": "Get",
+                              "name": "step_15",
                               "valid": true,
-                              "type": "BRANCH",
+                              "type": "PIECE",
                               "settings": {
-                                "conditions": [
-                                  [
-                                    {
-                                      "firstValue": "{{step_6['operation']}}",
-                                      "secondValue": "publish",
-                                      "operator": "TEXT_EXACTLY_MATCHES",
-                                      "caseSensitive": true
-                                    },
-                                    {
-                                      "firstValue": "{{step_6['status']}}",
-                                      "secondValue": "done",
-                                      "operator": "TEXT_EXACTLY_MATCHES",
-                                      "caseSensitive": true
-                                    }
-                                  ]
-                                ],
-                                "inputUiInfo": {}
+                                "packageType": "REGISTRY",
+                                "pieceType": "OFFICIAL",
+                                "pieceName": "@activepieces/piece-store",
+                                "pieceVersion": "0.4.1",
+                                "input": {
+                                  "key": "STRETO_ATTRIBUTES",
+                                  "store_scope": "FLOW",
+                                  "defaultValue": "[]"
+                                },
+                                "inputUiInfo": {},
+                                "actionName": "get"
                               },
-                              "onSuccessAction": {
-                                "displayName": "Update Product",
-                                "name": "step_9",
+                              "nextAction": {
+                                "displayName": "Publish Products",
+                                "name": "step_6",
                                 "valid": true,
+                                "nextAction": {
+                                  "displayName": "Branch",
+                                  "name": "step_10",
+                                  "valid": true,
+                                  "type": "BRANCH",
+                                  "settings": {
+                                    "conditions": [
+                                      [
+                                        {
+                                          "firstValue": "{{step_6['operation']}}",
+                                          "secondValue": "publish",
+                                          "operator": "TEXT_EXACTLY_MATCHES",
+                                          "caseSensitive": true
+                                        },
+                                        {
+                                          "firstValue": "{{step_6['status']}}",
+                                          "secondValue": "done",
+                                          "operator": "TEXT_EXACTLY_MATCHES",
+                                          "caseSensitive": true
+                                        }
+                                      ]
+                                    ],
+                                    "inputUiInfo": {}
+                                  },
+                                  "onSuccessAction": {
+                                    "displayName": "Update Product",
+                                    "name": "step_9",
+                                    "valid": true,
+                                    "type": "PIECE",
+                                    "settings": {
+                                      "packageType": "REGISTRY",
+                                      "pieceType": "OFFICIAL",
+                                      "pieceName": "@lagomus/piece-streto",
+                                      "pieceVersion": "1.0.14",
+                                      "input": {
+                                        "auth": "{{connections['streto']}}",
+                                        "productId": "{{step_6['productId']}}",
+                                        "attributes": "{{step_6['publications']}}"
+                                      },
+                                      "inputUiInfo": {},
+                                      "actionName": "update_product"
+                                    }
+                                  }
+                                },
                                 "type": "PIECE",
                                 "settings": {
                                   "packageType": "REGISTRY",
                                   "pieceType": "OFFICIAL",
-                                  "pieceName": "@lagomus/piece-streto",
-                                  "pieceVersion": "^1.0.14",
+                                  "pieceName": "@lagomus/piece-mercadolibre",
+                                  "pieceVersion": "1.0.13",
                                   "input": {
-                                    "auth": "{{connections['streto']}}",
-                                    "productId": "{{step_6['productId']}}",
-                                    "attributes": "{{step_6['publications']}}"
+                                    "auth": "{{connections['_lagomus_piece-mercadolibre']}}",
+                                    "product": "{{step_7.item}}",
+                                    "cdnBaseUrl": "{{trigger['body']['cdnBaseUrl']}}",
+                                    "catalogType": "{{step_8.item.catalogType}}",
+                                    "stretoAttributes": "{{step_15}}",
+                                    "lastFlowExecKey": "LAST_EXECUTION"
                                   },
                                   "inputUiInfo": {},
-                                  "actionName": "update_product"
+                                  "actionName": "publish_products"
                                 }
                               }
-                            },
-                            "type": "PIECE",
-                            "settings": {
-                              "packageType": "REGISTRY",
-                              "pieceType": "OFFICIAL",
-                              "pieceName": "@lagomus/piece-mercadolibre",
-                              "pieceVersion": "^1.0.13",
-                              "input": {
-                                "auth": "{{connections['_lagomus_piece-mercadolibre']}}",
-                                "product": "{{step_7.item}}",
-                                "cdnBaseUrl": "{{trigger['body']['cdnBaseUrl']}}",
-                                "catalogType": "{{step_8.item.catalogType}}",
-                                "stretoAttributes": "{{step_15}}",
-                                "lastFlowExecKey": "LAST_EXECUTION"
-                              },
-                              "inputUiInfo": {},
-                              "actionName": "publish_products"
                             }
                           }
                         }
@@ -279,8 +276,63 @@
                   }
                 }
               }
+            },
+            "onSuccessAction": {
+              "displayName": "Fetch Attributes",
+              "name": "step_13",
+              "valid": true,
+              "type": "PIECE",
+              "settings": {
+                "packageType": "REGISTRY",
+                "pieceType": "OFFICIAL",
+                "pieceName": "@lagomus/piece-streto",
+                "pieceVersion": "1.0.14",
+                "input": {
+                  "auth": "{{connections['streto']}}",
+                  "system": false
+                },
+                "inputUiInfo": {},
+                "actionName": "fetch_attributes"
+              }
+            },
+            "type": "BRANCH",
+            "settings": {
+              "conditions": [
+                [
+                  {
+                    "firstValue": "{{step_17}}",
+                    "operator": "BOOLEAN_IS_TRUE"
+                  }
+                ]
+              ],
+              "inputUiInfo": {}
             }
+          },
+          "type": "CODE",
+          "settings": {
+            "sourceCode": {
+              "packageJson": "\n      {\n        \"dependencies\": {\n        }\n      }",
+              "code": "export const code = async (inputs) => {\n    const minutesInMillis = Number.parseInt(inputs.expire_in_seconds) * 60 * 1000; // X minutes in milliseconds\n    const lastExecution = inputs.last_execution;\n    const currentTime = Date.now();\n    const difference = currentTime - lastExecution; // Calculate the difference\n    return difference > minutesInMillis;\n};"
+            },
+            "input": {
+              "last_execution": "{{step_16}}",
+              "expire_in_seconds": "5"
+            },
+            "inputUiInfo": {}
           }
+        },
+        "type": "PIECE",
+        "settings": {
+          "packageType": "REGISTRY",
+          "pieceType": "OFFICIAL",
+          "pieceName": "@activepieces/piece-store",
+          "pieceVersion": "0.4.1",
+          "input": {
+            "key": "LAST_EXECUTION",
+            "store_scope": "FLOW"
+          },
+          "inputUiInfo": {},
+          "actionName": "get"
         }
       },
       "type": "WEBHOOK",
