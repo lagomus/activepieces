@@ -88,6 +88,43 @@ export const publish_products = createAction({
       };
     }
 
+    const categoryId = getCategoryId(item.attributeSetNames);
+    if (!categoryId) {
+      return {
+        operation: operation,
+        publicationType: catalogType,
+        productSku: item.attributes.sku,
+        productId: item.id,
+        publications: publications,
+        status: 'fail',
+        error: 'Category Not Found',
+      };
+    }
+
+    const persistedMeliAttrs = await context.store.get<string>(
+      categoryId,
+      StoreScope.FLOW
+    );
+
+    let meli_attributes = persistedMeliAttrs
+      ? JSON.parse(persistedMeliAttrs)
+      : undefined;
+
+    if (!meli_attributes) {
+      meli_attributes = (
+        await httpClient.sendRequest<MeliAttribute[]>({
+          method: HttpMethod.GET,
+          headers: { Authorization: `Bearer ${token}` },
+          url: `${context.auth.baseUrl}/categories/${categoryId}/attributes`,
+        })
+      ).body;
+      await context.store.put<string>(
+        categoryId,
+        JSON.stringify(meli_attributes),
+        StoreScope.FLOW
+      );
+    }
+
     if (publicationId !== undefined) {
       // EDIT EXISTING PRODUCT
       operation = OPERATION_UPDATE;
@@ -159,7 +196,8 @@ export const publish_products = createAction({
               pictures: item.attributes['images']?.map((i) => ({
                 source: `${cdnBaseUrl}/${i.id}`,
               })),
-              status: getPublicationStatus(publications, catalogType),
+              status: getPublicationStatus(catalogType, publications),
+              attributes: getAttributesValues(item, meli_attributes),
             },
           });
         }
@@ -179,71 +217,42 @@ export const publish_products = createAction({
     } else {
       // PUBLISH NEW PRODUCT
       operation = OPERATION_PUBLISH;
-      const categoryId = getCategoryId(item.attributeSetNames);
 
-      if (categoryId) {
-        const persistedMeliAttrs = await context.store.get<string>(
-          categoryId,
-          StoreScope.FLOW
-        );
+      if (item.type === SIMPLE_TYPE) {
+        const body = generateProduct(item, meli_attributes, cdnBaseUrl);
 
-        let meli_attributes = persistedMeliAttrs
-          ? JSON.parse(persistedMeliAttrs)
-          : undefined;
+        try {
+          const published = await httpClient.sendRequest<Item>({
+            method: HttpMethod.POST,
+            headers: { Authorization: `Bearer ${token}` },
+            url: `${context.auth.baseUrl}/items`,
+            body: body,
+          });
 
-        if (!meli_attributes) {
-          meli_attributes = (
-            await httpClient.sendRequest<MeliAttribute[]>({
-              method: HttpMethod.GET,
-              headers: { Authorization: `Bearer ${token}` },
-              url: `${context.auth.baseUrl}/categories/${categoryId}/attributes`,
-            })
-          ).body;
-          await context.store.put<string>(
-            categoryId,
-            JSON.stringify(meli_attributes),
-            StoreScope.FLOW
+          publicationId = published.body.id;
+        } catch (e: any) {
+          error = e.message;
+        }
+      } else if (item.type === CONFIGURABLE_TYPE) {
+        try {
+          const body = generateProductVariation(
+            item,
+            meli_attributes,
+            streto_attributes,
+            cdnBaseUrl
           );
+
+          const published = await httpClient.sendRequest<Item>({
+            method: HttpMethod.POST,
+            headers: { Authorization: `Bearer ${token}` },
+            url: `${context.auth.baseUrl}/items`,
+            body: body,
+          });
+
+          publicationId = published.body.id;
+        } catch (e: any) {
+          error = e.message;
         }
-
-        if (item.type === SIMPLE_TYPE) {
-          const body = generateProduct(item, meli_attributes, cdnBaseUrl);
-
-          try {
-            const published = await httpClient.sendRequest<Item>({
-              method: HttpMethod.POST,
-              headers: { Authorization: `Bearer ${token}` },
-              url: `${context.auth.baseUrl}/items`,
-              body: body,
-            });
-
-            publicationId = published.body.id;
-          } catch (e: any) {
-            error = e.message;
-          }
-        } else if (item.type === CONFIGURABLE_TYPE) {
-          try {
-            const body = generateProductVariation(
-              item,
-              meli_attributes,
-              streto_attributes,
-              cdnBaseUrl
-            );
-
-            const published = await httpClient.sendRequest<Item>({
-              method: HttpMethod.POST,
-              headers: { Authorization: `Bearer ${token}` },
-              url: `${context.auth.baseUrl}/items`,
-              body: body,
-            });
-
-            publicationId = published.body.id;
-          } catch (e: any) {
-            error = e.message;
-          }
-        }
-      } else {
-        error = 'Category Not Found';
       }
     }
 
@@ -443,8 +452,6 @@ function getPublicationId(catalogType: string, ml_publications?: any) {
 }
 
 function getPublicationStatus(catalogType: string, ml_publications?: any) {
-  console.dir(ml_publications);
-  console.dir(catalogType);
   return ml_publications && ml_publications[catalogType]
     ? Object.values(ml_publications[catalogType])[0]
       ? 'active'
